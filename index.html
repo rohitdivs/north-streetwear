@@ -1,0 +1,1783 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NORTH — Always Move Forward | Premium Streetwear</title>
+    <meta name="description"
+        content="North is a high-fashion luxury streetwear brand engineered for everyday mobility. Explore 240 GSM heavyweight oversized tees, cargo joggers, boxy hoodies and curated looks.">
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap"
+        rel="stylesheet">
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+
+<body>
+
+    <!-- ═══════════════════ PRELOADER ═══════════════════ -->
+    <div id="preloader" class="north-preloader">
+        <div class="preloader-content">
+            <div class="preloader-logo">NORTH</div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════ TOP ANNOUNCEMENT TICKER ═══════════════════ -->
+    <div class="top-announcement-bar">
+        <div class="announcement-track">
+            <div class="announcement-content">
+                <span><i class="fas fa-bolt"></i> FREE EXPRESS SHIPPING ON ALL ORDERS OVER ₹799</span>
+                <span class="ticker-dot">◆</span>
+                <span><i class="fas fa-shield-alt"></i> 100% REFUND GUARANTEE — 7 DAYS HASSLE-FREE RETURNS</span>
+                <span class="ticker-dot">◆</span>
+                <span><i class="fas fa-tag"></i> USE CODE <strong>'NORTH300'</strong> FOR FLAT ₹300 OFF ON
+                    ₹1,999+</span>
+                <span class="ticker-dot">◆</span>
+                <span><i class="fas fa-tshirt"></i> 240 GSM HEAVYWEIGHT TERRY COTTON DROPS LIVE</span>
+                <span class="ticker-dot">◆</span>
+                <span><i class="fas fa-envelope"></i> OFFICIAL 24/7 SUPPORT:
+                    <strong>rohit@wearnorth.com</strong></span>
+                <span class="ticker-dot">◆</span>
+                <span><i class="fas fa-bolt"></i> ALWAYS MOVE FORWARD — NO SPEED LIMITS</span>
+                <span class="ticker-dot">◆</span>
+                <!-- Duplicate loop for smooth infinite marquee -->
+                <span><i class="fas fa-bolt"></i> FREE EXPRESS SHIPPING ON ALL ORDERS OVER ₹799</span>
+                <span class="ticker-dot">◆</span>
+                <span><i class="fas fa-shield-alt"></i> 100% REFUND GUARANTEE — 7 DAYS HASSLE-FREE RETURNS</span>
+                <span class="ticker-dot">◆</span>
+                <span><i class="fas fa-tag"></i> USE CODE <strong>'NORTH300'</strong> FOR FLAT ₹300 OFF ON
+                    ₹1,999+</span>
+                <span class="ticker-dot">◆</span>
+                <span><i class="fas fa-tshirt"></i> 240 GSM HEAVYWEIGHT TERRY COTTON DROPS LIVE</span>
+                <span class="ticker-dot">◆</span>
+                <span><i class="fas fa-envelope"></i> OFFICIAL 24/7 SUPPORT:
+                    <strong>rohit@wearnorth.com</strong></span>
+                <span class="ticker-dot">◆</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════ TOP DEPARTMENT SWITCHER BAR ═══════════════════ -->
+    <div class="department-tabs-bar">
+        <div class="container department-tabs-container">
+            <div class="department-tabs">
+                <a href="#collection" class="dept-tab active" data-dept="all">STREETWEAR DROPS</a>
+                <a href="#combo" class="dept-tab" data-dept="combos"><i class="fas fa-fire"
+                        style="color:#ef4444; margin-right:4px;"></i> COMBO BUNDLER (SAVE ₹500)</a>
+                <a href="#styler" class="dept-tab" data-dept="styler"><i class="fas fa-layer-group"
+                        style="color:var(--accent); margin-right:4px;"></i> OUTFIT BUILDER</a>
+                <a href="#lookbook" class="dept-tab" data-dept="looks">SHOP THE LOOK</a>
+                <a href="#fabric" class="dept-tab" data-dept="fabric">240 GSM LAB</a>
+            </div>
+            <div class="department-meta"
+                style="font-size: 0.68rem; font-weight: 700; color: var(--accent); letter-spacing: 1px;">
+                <i class="fas fa-certificate"></i> AUTHENTIC HEAVYWEIGHT QUALITY
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════ NAVBAR ═══════════════════ -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-container">
+            <a href="#" class="nav-logo">NORTH</a>
+            <ul class="nav-links" id="navLinks">
+                <li><a href="#home" class="active">Home</a></li>
+                <li><a href="#collection">Collection</a></li>
+                <li><a href="#combo">Combo Builder</a></li>
+                <li><a href="#styler">Outfit Styler</a></li>
+                <li><a href="#lookbook">Lookbook</a></li>
+                <li><a href="#fabric">Fabric Lab</a></li>
+                <li><a href="#reviews">Reviews</a></li>
+                <li><a href="#about">About</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+            <div class="nav-actions">
+                <button class="nav-icon" id="trackOrderNavBtn" aria-label="Track Order" title="Track Order & History">
+                    <i class="fas fa-truck-fast"></i>
+                </button>
+                <button class="nav-icon" id="searchTriggerBtn" aria-label="Search" title="Search Drops">
+                    <i class="fas fa-search"></i>
+                </button>
+                <button class="nav-icon wishlist-icon" id="wishlistTriggerBtn" aria-label="Wishlist"
+                    title="Saved Items">
+                    <i class="fas fa-heart"></i>
+                    <span class="wishlist-count" id="navWishlistCount">0</span>
+                </button>
+                <button class="nav-icon cart-icon" id="cartTriggerBtn" aria-label="Cart" title="Shopping Bag">
+                    <i class="fas fa-shopping-bag"></i>
+                    <span class="cart-count" id="navCartCount">0</span>
+                </button>
+                <button class="hamburger" id="hamburger" aria-label="Menu">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ═══════════════════ HERO BANNER SLIDER ═══════════════════ -->
+    <section class="hero-slider-section" id="home">
+        <div class="hero-slider-track" id="heroSliderTrack">
+            <!-- Slide 1 -->
+            <div class="hero-slide active">
+                <div class="hero-bg">
+                    <img src="images/hero-banner.jpg" alt="North Season 2026 Collection">
+                </div>
+                <div class="hero-overlay"></div>
+                <div class="hero-content">
+                    <div class="hero-tag">NEW DROP 2026 • 240 GSM HEAVYWEIGHT</div>
+                    <h1 class="hero-title">
+                        <span class="hero-title-line">NORTH</span>
+                    </h1>
+                    <p class="hero-tagline">ALWAYS MOVE FORWARD</p>
+                    <p class="hero-subdesc">Luxury boxy silhouettes, French terry cotton, and engineered drape crafted
+                        for unapologetic individuality.</p>
+                    <div class="hero-buttons">
+                        <a href="#collection" class="btn btn-primary">EXPLORE THE DROP <span
+                                class="badge-mini">HOT</span></a>
+                        <a href="#combo" class="btn btn-outline">BUILD YOUR COMBO</a>
+                    </div>
+                </div>
+            </div>
+            <!-- Slide 2 -->
+            <div class="hero-slide">
+                <div class="hero-bg">
+                    <img src="images/look-tokyo-drift.jpg" alt="Tokyo Drift Flight Series">
+                </div>
+                <div class="hero-overlay"></div>
+                <div class="hero-content">
+                    <div class="hero-tag">TACTICAL NOMAD SERIES</div>
+                    <h1 class="hero-title">
+                        <span class="hero-title-line">URBAN TRANSIT</span>
+                    </h1>
+                    <p class="hero-tagline">BUILT FOR METROPOLITAN PACE</p>
+                    <p class="hero-subdesc">Reinforced 6-pocket cargo joggers and water-repellent flight jackets
+                        engineered for all-weather exploration.</p>
+                    <div class="hero-buttons">
+                        <a href="#lookbook" class="btn btn-primary">SHOP THE LOOK</a>
+                        <a href="#collection" class="btn btn-outline">VIEW CARGO JOGGERS</a>
+                    </div>
+                </div>
+            </div>
+            <!-- Slide 3 -->
+            <div class="hero-slide">
+                <div class="hero-bg">
+                    <img src="images/look-midnight-nomad.jpg" alt="Minimalist Streetwear Drop">
+                </div>
+                <div class="hero-overlay"></div>
+                <div class="hero-content">
+                    <div class="hero-tag">EXCLUSIVE STREETWEAR BUNDLES</div>
+                    <h1 class="hero-title">
+                        <span class="hero-title-line">CUSTOM COMBO</span>
+                    </h1>
+                    <p class="hero-tagline">CURATE YOUR STREETWEAR DUO</p>
+                    <p class="hero-subdesc">Pair your favorite Heavyweight Boxy Tee with tactical cargo joggers and save
+                        up to ₹500 instantly.</p>
+                    <div class="hero-buttons">
+                        <a href="#combo" class="btn btn-primary">BUILD COMBO NOW</a>
+                        <a href="#collection" class="btn btn-outline">BROWSE CATALOG</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slider Controls -->
+        <button class="slider-arrow slider-prev" id="sliderPrevBtn" aria-label="Previous Slide">
+            <i class="fas fa-chevron-left"></i>
+        </button>
+        <button class="slider-arrow slider-next" id="sliderNextBtn" aria-label="Next Slide">
+            <i class="fas fa-chevron-right"></i>
+        </button>
+    </section>
+
+    <!-- ═══════════════════ MARQUEE ═══════════════════ -->
+    <div class="marquee-section">
+        <div class="marquee-track">
+            <div class="marquee-content">
+                <span>ALWAYS MOVE FORWARD</span>
+                <span class="marquee-dot">◆</span>
+                <span>240 GSM BIO-WASHED HEAVYWEIGHT</span>
+                <span class="marquee-dot">◆</span>
+                <span>OVERSIZED BOXY FIT</span>
+                <span class="marquee-dot">◆</span>
+                <span>FREE EXPRESS SHIPPING OVER ₹799</span>
+                <span class="marquee-dot">◆</span>
+                <span>ALWAYS MOVE FORWARD</span>
+                <span class="marquee-dot">◆</span>
+                <span>PREMIUM STREETWEAR INDIA</span>
+                <span class="marquee-dot">◆</span>
+                <span>NO SHORTCUTS ONLY ELEVATION</span>
+                <span class="marquee-dot">◆</span>
+                <span>ALWAYS MOVE FORWARD</span>
+                <span class="marquee-dot">◆</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════ CATEGORY STORY BUBBLES ═══════════════════ -->
+    <section class="story-bubbles-section">
+        <div class="container">
+            <div class="story-bubbles-track" id="storyBubblesTrack">
+                <div class="story-bubble active" data-filter="all">
+                    <div class="bubble-ring">
+                        <div class="bubble-avatar"><i class="fas fa-th-large"></i></div>
+                    </div>
+                    <span class="bubble-name">All Drops</span>
+                </div>
+                <div class="story-bubble special-bubble" data-filter="tshirts">
+                    <div class="bubble-ring">
+                        <div class="bubble-avatar"><i class="fas fa-tshirt"></i></div>
+                    </div>
+                    <span class="bubble-name">240 GSM Tees</span>
+                </div>
+                <div class="story-bubble" data-filter="pants">
+                    <div class="bubble-ring">
+                        <div class="bubble-avatar"><i class="fas fa-running"></i></div>
+                    </div>
+                    <span class="bubble-name">Cargo & Joggers</span>
+                </div>
+                <div class="story-bubble" data-filter="hoodies">
+                    <div class="bubble-ring">
+                        <div class="bubble-avatar"><i class="fas fa-vest"></i></div>
+                    </div>
+                    <span class="bubble-name">Boxy Hoodies</span>
+                </div>
+                <div class="story-bubble" data-filter="jackets">
+                    <div class="bubble-ring">
+                        <div class="bubble-avatar"><i class="fas fa-user-astronaut"></i></div>
+                    </div>
+                    <span class="bubble-name">Bomber Jackets</span>
+                </div>
+                <div class="story-bubble" data-filter="accessories">
+                    <div class="bubble-ring">
+                        <div class="bubble-avatar"><i class="fas fa-hat-cowboy"></i></div>
+                    </div>
+                    <span class="bubble-name">Caps & Accs</span>
+                </div>
+                <div class="story-bubble" data-filter="bestseller">
+                    <div class="bubble-ring">
+                        <div class="bubble-avatar"><i class="fas fa-fire" style="color:#ef4444;"></i></div>
+                    </div>
+                    <span class="bubble-name">Best Sellers</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════════ PRODUCT CATALOG & FILTERS ═══════════════════ -->
+    <section class="products-section" id="collection">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-label">COLLECTION 2026</span>
+                <h2 class="section-title">Heavyweight Drops</h2>
+                <p class="section-subtitle">Engineered drape, true-to-color organic dyeing, and raw minimalist
+                    aesthetic.</p>
+            </div>
+
+            <!-- Controls Bar: Filter Tabs, Filter Drawer Button, Sort Dropdown -->
+            <div class="catalog-controls-bar">
+                <div class="filter-tabs" id="categoryFilterTabs">
+                    <button class="filter-btn active" data-filter="all">All Drops</button>
+                    <button class="filter-btn" data-filter="tshirts">T-Shirts (240 GSM)</button>
+                    <button class="filter-btn" data-filter="pants">Cargo & Pants</button>
+                    <button class="filter-btn" data-filter="hoodies">Hoodies</button>
+                    <button class="filter-btn" data-filter="jackets">Jackets</button>
+                    <button class="filter-btn" data-filter="accessories">Accessories</button>
+                </div>
+
+                <div class="filter-actions-group">
+                    <button class="filter-tray-toggle-btn" id="filterTrayToggleBtn">
+                        <i class="fas fa-sliders-h"></i> Filters
+                        <span class="filter-badge-count" id="activeFilterBadge" style="display:none;">0</span>
+                    </button>
+
+                    <div class="sort-select-wrapper">
+                        <label for="sortDropdown" class="sort-label"><i class="fas fa-sort-amount-down"></i>
+                            Sort:</label>
+                        <select id="sortDropdown" class="sort-dropdown">
+                            <option value="featured">Featured Drops</option>
+                            <option value="popular">Most Popular</option>
+                            <option value="price-low">Price: Low to High</option>
+                            <option value="price-high">Price: High to Low</option>
+                            <option value="rating">Highest Rated ★</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Collapsible Multi-Criteria Filter Tray -->
+            <div class="filter-tray-container" id="filterTrayContainer">
+                <div class="filter-tray-card">
+                    <div class="filter-tray-header">
+                        <h4><i class="fas fa-filter"></i> Refine Your Selection</h4>
+                        <button class="clear-filters-btn" id="clearFiltersBtn"><i class="fas fa-undo"></i> Reset All
+                            Filters</button>
+                    </div>
+                    <div class="filter-tray-grid">
+                        <!-- Price Range Slider -->
+                        <div class="filter-group">
+                            <div class="filter-group-title">
+                                <span>Max Budget</span>
+                                <span class="filter-val-tag" id="priceRangeValue">₹5,000</span>
+                            </div>
+                            <input type="range" id="priceRangeSlider" class="filter-range-slider" min="700" max="5000"
+                                step="100" value="5000">
+                            <div class="range-labels">
+                                <span>₹700</span>
+                                <span>₹5,000</span>
+                            </div>
+                        </div>
+
+                        <!-- Fabric Weight (GSM) Filter -->
+                        <div class="filter-group">
+                            <div class="filter-group-title">Fabric Weight (GSM)</div>
+                            <div class="filter-chips-row" id="gsmFilterGroup">
+                                <button class="filter-chip active" data-gsm="all">All</button>
+                                <button class="filter-chip" data-gsm="240">240 GSM</button>
+                                <button class="filter-chip" data-gsm="280">280 GSM</button>
+                                <button class="filter-chip" data-gsm="320">320 GSM</button>
+                                <button class="filter-chip" data-gsm="360">360 GSM</button>
+                            </div>
+                        </div>
+
+                        <!-- Color Family Filter -->
+                        <div class="filter-group">
+                            <div class="filter-group-title">Color Palette</div>
+                            <div class="filter-colors-row" id="colorFilterGroup">
+                                <span class="filter-color-pill active" data-color="all">All</span>
+                                <span class="filter-color-dot" style="background:#111111;" data-color="black"
+                                    title="Black"></span>
+                                <span class="filter-color-dot" style="background:#657b64;" data-color="sage"
+                                    title="Sage Green"></span>
+                                <span class="filter-color-dot" style="background:#f4f2ec; border:1px solid #ddd;"
+                                    data-color="white" title="Off-White"></span>
+                                <span class="filter-color-dot" style="background:#1d4ed8;" data-color="blue"
+                                    title="Cobalt Blue"></span>
+                                <span class="filter-color-dot" style="background:#556b2f;" data-color="olive"
+                                    title="Olive"></span>
+                                <span class="filter-color-dot" style="background:#4a5568;" data-color="grey"
+                                    title="Grey"></span>
+                                <span class="filter-color-dot" style="background:#c9a96e;" data-color="khaki"
+                                    title="Khaki"></span>
+                            </div>
+                        </div>
+
+                        <!-- Size Filter -->
+                        <div class="filter-group">
+                            <div class="filter-group-title">Size Availability</div>
+                            <div class="filter-chips-row" id="sizeFilterGroup">
+                                <button class="filter-chip active" data-size="all">All</button>
+                                <button class="filter-chip" data-size="S">S</button>
+                                <button class="filter-chip" data-size="M">M</button>
+                                <button class="filter-chip" data-size="L">L</button>
+                                <button class="filter-chip" data-size="XL">XL</button>
+                                <button class="filter-chip" data-size="XXL">XXL</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dynamic Product Grid -->
+            <div class="product-grid" id="mainProductGrid">
+                <!-- Injected dynamically via script.js for full reactivity & state synchronization -->
+            </div>
+
+            <!-- Empty State if filters yield no results -->
+            <div class="empty-catalog-state" id="emptyCatalogState" style="display:none;">
+                <i class="fas fa-box-open"></i>
+                <h3>No drops match your current filters</h3>
+                <p>Try clearing your price slider, GSM, or color filters to explore the full North collection.</p>
+                <button class="btn btn-primary" id="emptyResetBtn">RESET FILTERS</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════════ "BUILD YOUR STREETWEAR COMBO" (CUSTOM BUNDLER) ═══════════════════ -->
+    <section class="combo-bundler-section" id="combo">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-label">NOBERO SPECIAL BUNDLER</span>
+                <h2 class="section-title">Build Your Streetwear Combo</h2>
+                <p class="section-subtitle">Pick your Heavyweight Oversized Tee and pair it with a second tee or
+                    tactical cargo joggers to unlock up to ₹500 savings.</p>
+            </div>
+
+            <div class="combo-bundler-card">
+                <div class="combo-builder-grid">
+                    <!-- Slot 1 Column: Primary Oversized Tee -->
+                    <div class="combo-slot-column">
+                        <div class="slot-header">
+                            <span class="slot-step-pill">SLOT 1</span>
+                            <h4>Primary Heavyweight Tee</h4>
+                        </div>
+                        <label class="slot-input-label">Select Style</label>
+                        <select id="comboSlot1Style" class="combo-dropdown">
+                            <option value="p1" selected>North 240 GSM Oversized Heavyweight Tee (₹1,499)</option>
+                            <option value="p7">Raw Edge Acid Wash Drop Tee (₹1,699)</option>
+                        </select>
+
+                        <div class="slot-options-row">
+                            <div>
+                                <label class="slot-input-label">Select Color: <span id="comboSlot1ColorName"
+                                        style="color:var(--primary); font-weight:800;">Vintage Onyx Black</span></label>
+                                <div class="combo-color-swatches" id="comboSlot1Colors">
+                                    <span class="combo-color-dot active" style="background:#111;"
+                                        data-color="Vintage Onyx Black" data-img="images/product-1.jpg"></span>
+                                    <span class="combo-color-dot" style="background:#657b64;" data-color="Vintage Sage"
+                                        data-img="images/product-sage-tee.jpg"></span>
+                                    <span class="combo-color-dot" style="background:#f4f2ec; border:1px solid #ddd;"
+                                        data-color="Bone Cream Graphic" data-img="images/product-white-tee.jpg"></span>
+                                    <span class="combo-color-dot" style="background:#1d4ed8;" data-color="Cobalt Blue"
+                                        data-img="images/product-blue-tee.jpg"></span>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="slot-input-label">Select Size</label>
+                                <div class="combo-size-chips" id="comboSlot1Sizes">
+                                    <button class="combo-size-btn" data-size="S">S</button>
+                                    <button class="combo-size-btn" data-size="M">M</button>
+                                    <button class="combo-size-btn active" data-size="L">L</button>
+                                    <button class="combo-size-btn" data-size="XL">XL</button>
+                                    <button class="combo-size-btn" data-size="XXL">XXL</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Middle Column: Side-by-Side Live Visual Preview -->
+                    <div class="combo-preview-column">
+                        <div class="combo-duo-preview">
+                            <div class="combo-img-wrap">
+                                <img id="comboPreviewImg1" src="images/product-1.jpg" alt="Selected Slot 1 Item">
+                                <span class="combo-img-tag" id="comboPreviewTag1">SLOT 1 • L</span>
+                            </div>
+                            <div class="combo-plus-badge"><i class="fas fa-plus"></i></div>
+                            <div class="combo-img-wrap">
+                                <img id="comboPreviewImg2" src="images/product-olive-cargo.jpg"
+                                    alt="Selected Slot 2 Item">
+                                <span class="combo-img-tag" id="comboPreviewTag2">CARGO • 32</span>
+                            </div>
+                        </div>
+
+                        <div class="combo-pricing-summary">
+                            <div class="pricing-row">
+                                <span>Combined MRP</span>
+                                <span class="combo-strikethrough-price" id="comboTotalMrp">₹4,998</span>
+                            </div>
+                            <div class="pricing-row discount-row">
+                                <span>Combo Discount Applied</span>
+                                <span class="combo-saving-val" id="comboSavings">-₹299</span>
+                            </div>
+                            <div class="pricing-row total-row">
+                                <span>Combo Deal Price</span>
+                                <span class="combo-final-price" id="comboFinalPrice">₹3,699</span>
+                            </div>
+                            <button class="btn btn-primary" id="addComboToBagBtn" style="width:100%;">
+                                <i class="fas fa-shopping-bag"></i> ADD STREETWEAR COMBO TO BAG
+                            </button>
+                            <div class="combo-guarantee-note">
+                                <i class="fas fa-truck"></i> Free Express Shipping Unlocked & 7-Day Returns
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Slot 2 Column: Secondary Choice (Tee OR Cargo Joggers) -->
+                    <div class="combo-slot-column">
+                        <div class="slot-header">
+                            <span class="slot-step-pill">SLOT 2</span>
+                            <h4>Choose Your Pairing</h4>
+                        </div>
+
+                        <!-- Choice Type Switcher -->
+                        <div class="combo-pairing-type-tabs">
+                            <button class="pairing-tab" id="pairTabTee" data-type="tee">
+                                <span>Second Tee</span>
+                                <span class="saving-badge">SAVE ₹199</span>
+                            </button>
+                            <button class="pairing-tab active" id="pairTabCargo" data-type="cargo">
+                                <span>Cargo Joggers</span>
+                                <span class="saving-badge">SAVE ₹299</span>
+                            </button>
+                        </div>
+
+                        <div style="margin-top:1rem;">
+                            <label class="slot-input-label">Selected Piece</label>
+                            <select id="comboSlot2Style" class="combo-dropdown">
+                                <option value="cargo-olive" selected>Tactical 6-Pocket Cargo Joggers (₹2,499)</option>
+                                <option value="cargo-navy">Navy Relaxed Cargo Joggers (₹2,499)</option>
+                            </select>
+                        </div>
+
+                        <div class="slot-options-row">
+                            <div>
+                                <label class="slot-input-label">Color: <span id="comboSlot2ColorName"
+                                        style="color:var(--primary); font-weight:800;">Olive Green</span></label>
+                                <div class="combo-color-swatches" id="comboSlot2Colors">
+                                    <span class="combo-color-dot active" style="background:#556b2f;"
+                                        data-color="Olive Green" data-img="images/product-olive-cargo.jpg"></span>
+                                    <span class="combo-color-dot" style="background:#0d1b2a;" data-color="Navy Blue"
+                                        data-img="images/product-3.jpg"></span>
+                                    <span class="combo-color-dot" style="background:#111;" data-color="Midnight Black"
+                                        data-img="images/product-3.jpg"></span>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="slot-input-label">Size</label>
+                                <div class="combo-size-chips" id="comboSlot2Sizes">
+                                    <button class="combo-size-btn" data-size="30(S)">30</button>
+                                    <button class="combo-size-btn active" data-size="32(M)">32</button>
+                                    <button class="combo-size-btn" data-size="34(L)">34</button>
+                                    <button class="combo-size-btn" data-size="36(XL)">36</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════════ "MIX & MATCH" OUTFIT CANVAS BUILDER ═══════════════════ -->
+    <section class="styler-section" id="styler">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-label"><i class="fas fa-magic" style="color:var(--accent); margin-right:4px;"></i> VIRTUAL DRESSING ROOM</span>
+                <h2 class="section-title">Mix &amp; Match Outfit Builder</h2>
+                <p class="section-subtitle">Stack your personalized streetwear silhouette. Choose Headwear, Topwear &amp; Bottomwear to engineer your complete fit with an instant <strong>Flat ₹800 Bundle Saving</strong>.</p>
+            </div>
+
+            <div class="styler-grid">
+                <!-- Left: Visual Outfit Canvas / Mannequin Stack -->
+                <div class="styler-canvas-card">
+                    <div class="styler-canvas-header">
+                        <span class="styler-canvas-badge"><i class="fas fa-certificate"></i> DRIP RATIO: OPTIMAL</span>
+                        <button type="button" class="styler-random-btn" id="stylerRandomBtn" title="Shuffle Random Match">
+                            <i class="fas fa-random"></i> Shuffle Drip
+                        </button>
+                    </div>
+
+                    <div class="styler-mannequin-stack" id="stylerMannequinStack">
+                        <!-- Slot 1: Headwear Layer -->
+                        <div class="styler-layer-slot styler-slot-cap" data-slot="cap">
+                            <div class="styler-slot-tag">HEADWEAR</div>
+                            <img id="stylerImgCap" src="images/product-6.jpg" alt="Embroidered Dad Cap">
+                            <div class="styler-slot-info">
+                                <span class="styler-slot-name" id="stylerLabelCap">Embroidered Dad Cap</span>
+                                <span class="styler-slot-meta" id="stylerMetaCap">Pitch Black • Free Size</span>
+                            </div>
+                        </div>
+
+                        <!-- Slot 2: Topwear Layer -->
+                        <div class="styler-layer-slot styler-slot-top active" data-slot="top">
+                            <div class="styler-slot-tag">TOPWEAR</div>
+                            <img id="stylerImgTop" src="images/product-1.jpg" alt="240 GSM Oversized Heavyweight Tee">
+                            <div class="styler-slot-info">
+                                <span class="styler-slot-name" id="stylerLabelTop">North 240 GSM Oversized Tee</span>
+                                <span class="styler-slot-meta" id="stylerMetaTop">Vintage Onyx Black • Size L (240 GSM)</span>
+                            </div>
+                        </div>
+
+                        <!-- Slot 3: Bottomwear Layer -->
+                        <div class="styler-layer-slot styler-slot-bottom" data-slot="bottom">
+                            <div class="styler-slot-tag">BOTTOMWEAR</div>
+                            <img id="stylerImgBottom" src="images/product-olive-cargo.jpg" alt="Tactical Cargo Joggers">
+                            <div class="styler-slot-info">
+                                <span class="styler-slot-name" id="stylerLabelBottom">Tactical 6-Pocket Cargo Joggers</span>
+                                <span class="styler-slot-meta" id="stylerMetaBottom">Olive Green • Size 32(M) (280 GSM)</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="styler-canvas-footer">
+                        <div class="canvas-spec-pill"><i class="fas fa-layer-group"></i> Stack: <strong id="stylerTotalGsm">800 GSM Total</strong></div>
+                        <div class="canvas-spec-pill"><i class="fas fa-shield-alt"></i> Bio-Washed Cotton</div>
+                        <div class="canvas-spec-pill"><i class="fas fa-truck-fast"></i> Free Priority Shipping</div>
+                    </div>
+                </div>
+
+                <!-- Right: Interactive Wardrobe Controls -->
+                <div class="styler-controls-card">
+                    <div class="styler-slot-tabs">
+                        <button class="styler-tab active" data-target="top">
+                            <i class="fas fa-tshirt"></i>
+                            <span>1. Topwear</span>
+                        </button>
+                        <button class="styler-tab" data-target="bottom">
+                            <i class="fas fa-running"></i>
+                            <span>2. Bottoms</span>
+                        </button>
+                        <button class="styler-tab" data-target="cap">
+                            <i class="fas fa-hat-cowboy"></i>
+                            <span>3. Headwear</span>
+                        </button>
+                    </div>
+
+                    <!-- Wardrobe Pane 1: Topwear -->
+                    <div class="styler-pane active" id="stylerPaneTop">
+                        <h4 class="styler-pane-title">Choose Your Heavyweight Silhouette</h4>
+                        <div class="styler-item-options" id="stylerTopOptions">
+                            <!-- Populated dynamically via script.js -->
+                        </div>
+                        <div class="styler-option-block">
+                            <label class="styler-option-label">Select Color: <strong id="stylerTopColorLabel">Vintage Onyx Black</strong></label>
+                            <div class="styler-swatches-row" id="stylerTopSwatches"></div>
+                        </div>
+                        <div class="styler-option-block">
+                            <label class="styler-option-label">Select Size: <strong id="stylerTopSizeLabel">L</strong></label>
+                            <div class="styler-sizes-row" id="stylerTopSizes"></div>
+                        </div>
+                    </div>
+
+                    <!-- Wardrobe Pane 2: Bottomwear -->
+                    <div class="styler-pane" id="stylerPaneBottom">
+                        <h4 class="styler-pane-title">Choose Tactical Cargo or Track Pant</h4>
+                        <div class="styler-item-options" id="stylerBottomOptions">
+                            <!-- Populated dynamically via script.js -->
+                        </div>
+                        <div class="styler-option-block">
+                            <label class="styler-option-label">Select Color: <strong id="stylerBottomColorLabel">Olive Green</strong></label>
+                            <div class="styler-swatches-row" id="stylerBottomSwatches"></div>
+                        </div>
+                        <div class="styler-option-block">
+                            <label class="styler-option-label">Select Size: <strong id="stylerBottomSizeLabel">32(M)</strong></label>
+                            <div class="styler-sizes-row" id="stylerBottomSizes"></div>
+                        </div>
+                    </div>
+
+                    <!-- Wardrobe Pane 3: Headwear -->
+                    <div class="styler-pane" id="stylerPaneCap">
+                        <h4 class="styler-pane-title">Crown The Fit With An Embroidered Cap</h4>
+                        <div class="styler-item-options" id="stylerCapOptions">
+                            <!-- Populated dynamically via script.js -->
+                        </div>
+                        <div class="styler-option-block">
+                            <label class="styler-option-label">Select Color: <strong id="stylerCapColorLabel">Pitch Black</strong></label>
+                            <div class="styler-swatches-row" id="stylerCapSwatches"></div>
+                        </div>
+                        <div class="styler-option-block">
+                            <label class="styler-option-label">Size: <strong>Free Size (Adjustable Brass Clasp)</strong></label>
+                        </div>
+                    </div>
+
+                    <!-- Live Outfit Billing & 1-Click Buy Strip -->
+                    <div class="styler-pricing-box">
+                        <div class="styler-price-row">
+                            <span>Individual MRP Total:</span>
+                            <span class="styler-mrp-val" id="stylerMrpVal">₹4,897</span>
+                        </div>
+                        <div class="styler-price-row bundle-discount-row">
+                            <span><i class="fas fa-tag"></i> NORTH 3-Piece Outfit Bundle Discount:</span>
+                            <span class="styler-saving-val" id="stylerDiscountVal">-₹800</span>
+                        </div>
+                        <div class="styler-price-row total-row">
+                            <div>
+                                <span class="styler-final-label">Complete Outfit Price:</span>
+                                <div class="styler-net-price" id="stylerNetPrice">₹4,097</div>
+                            </div>
+                            <span class="styler-save-tag">SAVE ₹800 TODAY</span>
+                        </div>
+                        <button class="btn btn-primary btn-lg styler-add-all-btn" id="addOutfitToBagBtn">
+                            <i class="fas fa-layer-group"></i> ADD COMPLETE 3-PIECE FIT TO BAG
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════════ "SHOP THE LOOK" (CURATED OUTFITS) ═══════════════════ -->
+    <section class="shop-the-look-section" id="lookbook">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-label">CURATED STREETWEAR ENSEMBLES</span>
+                <h2 class="section-title">Shop The Look</h2>
+                <p class="section-subtitle">Pre-styled head-to-toe aesthetics designed by North stylists. Complete look
+                    bundled with an exclusive direct discount.</p>
+            </div>
+
+            <!-- Look Tabs -->
+            <div class="look-tabs-wrapper" id="lookTabsWrapper">
+                <button class="look-tab active" data-look="urban">URBAN TRANSIT LOOK</button>
+                <button class="look-tab" data-look="nomad">MIDNIGHT NOMAD LOOK</button>
+                <button class="look-tab" data-look="tokyo">TOKYO CYBER DRIFT LOOK</button>
+            </div>
+
+            <!-- Look Showcase Card -->
+            <div class="look-showcase-card" id="lookShowcaseCard">
+                <!-- Left: Full Editorial Photo -->
+                <div class="look-model-col">
+                    <div class="look-image-container">
+                        <img id="lookMainImage" src="images/look-urban-transit.jpg" alt="Urban Transit Streetwear Look">
+                        <span class="look-floating-badge"><i class="fas fa-camera"></i> LOOK 01 / 03</span>
+                    </div>
+                </div>
+
+                <!-- Right: Breakdown & Price -->
+                <div class="look-breakdown-col">
+                    <div>
+                        <span class="look-tag" id="lookTag">HEAD-TO-TOE OUTFIT</span>
+                        <h3 class="look-title" id="lookTitle">The Urban Transit Look</h3>
+                        <p class="look-desc" id="lookDesc">Crafted for everyday subway transitions and brutalist
+                            concrete landscapes. Heavyweight oversized black tee layered with utilitarian tactical cargo
+                            joggers and our signature embroidered cap.</p>
+
+                        <div class="look-items-list" id="lookItemsList">
+                            <div class="look-item-row">
+                                <img src="images/product-1.jpg" alt="Heavyweight Tee" class="look-item-thumb">
+                                <div class="look-item-meta">
+                                    <div class="look-item-name">Essential 240 GSM Boxy Tee</div>
+                                    <div class="look-item-spec">Midnight Black • Size L</div>
+                                </div>
+                                <div class="look-item-price">₹1,499</div>
+                            </div>
+                            <div class="look-item-row">
+                                <img src="images/product-olive-cargo.jpg" alt="Cargo Joggers" class="look-item-thumb">
+                                <div class="look-item-meta">
+                                    <div class="look-item-name">Tactical 6-Pocket Cargo Joggers</div>
+                                    <div class="look-item-spec">Olive Green • Size 32</div>
+                                </div>
+                                <div class="look-item-price">₹2,499</div>
+                            </div>
+                            <div class="look-item-row">
+                                <img src="images/product-6.jpg" alt="Cap" class="look-item-thumb">
+                                <div class="look-item-meta">
+                                    <div class="look-item-name">Embroidered Dad Cap</div>
+                                    <div class="look-item-spec">Pitch Black • Free Size</div>
+                                </div>
+                                <div class="look-item-price">₹899</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="look-footer-action">
+                        <div class="look-price-block">
+                            <span class="look-mrp" id="lookMrp">Total MRP: ₹4,897</span>
+                            <span class="look-bundled-price" id="lookBundledPrice">₹3,999</span>
+                            <span class="look-save-pill" id="lookSavePill">YOU SAVE ₹898 ON THIS LOOK</span>
+                        </div>
+                        <button class="btn btn-primary" id="addLookToBagBtn">
+                            <i class="fas fa-shopping-bag"></i> ADD COMPLETE LOOK TO BAG
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════════ FABRIC LAB (240 GSM SPECIFICATIONS) ═══════════════════ -->
+    <section class="fabric-lab-section" id="fabric">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-label">TEXTILE SCIENCE</span>
+                <h2 class="section-title">Engineered For The Streets</h2>
+                <p class="section-subtitle">No synthetic thin blends. Every North garment is built on high-density
+                    structural cotton that maintains its shape wash after wash.</p>
+            </div>
+
+            <div class="fabric-grid">
+                <div class="fabric-card">
+                    <div class="fabric-icon"><i class="fas fa-weight-hanging"></i></div>
+                    <h3>240 GSM Heavyweight</h3>
+                    <p>Heavy single-jersey construction gives the boxy silhouette its crisp, sculpted streetwear drop
+                        without clinging to the body.</p>
+                    <span class="fabric-stat">STRUCTURAL DRAPE</span>
+                </div>
+                <div class="fabric-card">
+                    <div class="fabric-icon"><i class="fas fa-leaf"></i></div>
+                    <h3>100% Combed Cotton</h3>
+                    <p>Long-staple ring-spun cotton fibers combed to eliminate short, prickling threads, yielding
+                        ultra-soft hand feel with extreme durability.</p>
+                    <span class="fabric-stat">PURE RING-SPUN</span>
+                </div>
+                <div class="fabric-card">
+                    <div class="fabric-icon"><i class="fas fa-tint"></i></div>
+                    <h3>Bio-Washed & Pre-Shrunk</h3>
+                    <p>Enzyme bio-washing treatment removes surface fuzz to eliminate pilling, and thermal pre-shrinking
+                        guarantees zero shape alteration.</p>
+                    <span class="fabric-stat">ZERO SHRINKAGE</span>
+                </div>
+                <div class="fabric-card">
+                    <div class="fabric-icon"><i class="fas fa-shield-virus"></i></div>
+                    <h3>Color-Lock Reactive Dyes</h3>
+                    <p>High-affinity molecular reactive dyeing ensures deep pitch blacks and earthy mineral hues remain
+                        vibrant after 50+ machine washes.</p>
+                    <span class="fabric-stat">FADE-PROOF</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════════ CUSTOMER COMMUNITY REVIEWS (FEATURE B) ═══════════════════ -->
+    <section class="testimonials-section" id="reviews">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-label"><i class="fas fa-star" style="color:#eab308; margin-right:4px;"></i> 100% VERIFIED COMMUNITY</span>
+                <h2 class="section-title">Streetwear Community Reviews</h2>
+                <p class="section-subtitle">Real feedback from 10,000+ fashion-forward thinkers across Delhi, Mumbai, Bengaluru, Pune, and Hyderabad.</p>
+            </div>
+
+            <!-- Reviews Rating Bar & Action Row -->
+            <div class="reviews-summary-bar">
+                <div class="reviews-rating-score-box">
+                    <div class="big-rating-number" id="reviewAvgScore">4.9</div>
+                    <div class="rating-stars-col">
+                        <div class="stars-gold">★★★★★</div>
+                        <span class="rating-count-sub" id="reviewCountLabel">Based on 640+ Verified Drops</span>
+                    </div>
+                </div>
+
+                <div class="reviews-trust-pills">
+                    <div class="trust-pill"><i class="fas fa-check-circle" style="color:#22c55e;"></i> 98.4% True-to-Oversized Fit</div>
+                    <div class="trust-pill"><i class="fas fa-tshirt" style="color:var(--accent);"></i> Zero Bacon Collar Guarantee</div>
+                </div>
+
+                <button type="button" class="btn btn-primary write-review-trigger-btn" id="openWriteReviewBtn">
+                    <i class="fas fa-pen-nib"></i> WRITE A REVIEW
+                </button>
+            </div>
+
+            <!-- Filter Tabs for Reviews -->
+            <div class="reviews-filter-tabs" id="reviewsFilterTabs">
+                <button class="review-filter-btn active" data-filter="all">All Reviews (<span id="countAllReviews">3</span>)</button>
+                <button class="review-filter-btn" data-filter="5star">5 Stars (★ 5.0)</button>
+                <button class="review-filter-btn" data-filter="tshirts">240 GSM Tees</button>
+                <button class="review-filter-btn" data-filter="pants">Cargo Joggers</button>
+                <button class="review-filter-btn" data-filter="hoodies">Boxy Hoodies</button>
+            </div>
+
+            <!-- Dynamic Reviews Grid Container -->
+            <div class="testimonials-grid" id="reviewsGridContainer">
+                <!-- Dynamically populated via script.js -->
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════════ FEATURES / TRUST ═══════════════════ -->
+    <section class="features-section">
+        <div class="container">
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-truck-fast"></i></div>
+                    <h3>Free Shipping</h3>
+                    <p>On all orders above ₹799</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-undo"></i></div>
+                    <h3>7-Day Returns</h3>
+                    <p>Hassle-free doorstep exchanges</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-shield-alt"></i></div>
+                    <h3>100% Cotton</h3>
+                    <p>Crafted with 240+ GSM fabrics</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-headset"></i></div>
+                    <h3>Dedicated Support</h3>
+                    <p>rohit@wearnorth.com</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════════ ABOUT SECTION ═══════════════════ -->
+    <section class="about-section" id="about">
+        <div class="container">
+            <div class="about-grid">
+                <div class="about-content">
+                    <span class="section-label">OUR STORY</span>
+                    <h2 class="about-title">We Believe In<br><em>Moving Forward</em></h2>
+                    <p class="about-text">
+                        North is more than a clothing brand — it's an unwavering commitment to forward momentum. Born
+                        from the hunger to craft authentic heavyweight streetwear without excessive luxury markups, we
+                        design for creators who refuse to stand still.
+                    </p>
+                    <p class="about-text">
+                        Every drop features carefully dialed silhouettes, heavy loop-knit cottons, and custom-dyed
+                        palettes inspired by metropolitan architecture. When you wear North, you wear intention.
+                    </p>
+                    <div class="about-stats">
+                        <div class="stat">
+                            <span class="stat-number" data-target="50">50</span><span class="stat-suffix">+</span>
+                            <span class="stat-label">Products</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-number" data-target="10">10</span><span class="stat-suffix">K+</span>
+                            <span class="stat-label">Happy Customers</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-number" data-target="28">28</span><span class="stat-suffix">+</span>
+                            <span class="stat-label">States Delivered</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="about-visual">
+                    <div class="about-image-wrapper">
+                        <div class="about-image-bg"></div>
+                        <img src="images/hero-banner.jpg" alt="About North Brand" class="about-image">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════════ NEWSLETTER ═══════════════════ -->
+    <section class="newsletter-section">
+        <div class="container">
+            <div class="newsletter-content">
+                <span class="section-label">JOIN THE MOVEMENT</span>
+                <h2 class="newsletter-title">Unlock Flat ₹150 Off Your Drop</h2>
+                <p class="newsletter-text">Subscribe to receive early VIP drop access, secret lookbook releases, and an
+                    instant discount on your initial streetwear bag.</p>
+                <form class="newsletter-form" id="newsletterForm">
+                    <div class="input-group">
+                        <input type="email" id="newsletterEmailInput" placeholder="Enter your email address" required>
+                        <button type="submit" class="btn btn-primary">SUBSCRIBE</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════════ INSTAGRAM / SOCIAL PROOF ═══════════════════ -->
+    <section class="social-section">
+        <div class="section-header" style="padding: 0 2rem;">
+            <span class="section-label">STREETWEAR COMMUNITY</span>
+            <h2 class="section-title">@north.always</h2>
+        </div>
+        <div class="social-grid">
+            <div class="social-item"><img src="images/product-1.jpg" alt="Instagram Post">
+                <div class="social-overlay"><i class="fab fa-instagram"></i></div>
+            </div>
+            <div class="social-item"><img src="images/product-sage-tee.jpg" alt="Instagram Post">
+                <div class="social-overlay"><i class="fab fa-instagram"></i></div>
+            </div>
+            <div class="social-item"><img src="images/product-olive-cargo.jpg" alt="Instagram Post">
+                <div class="social-overlay"><i class="fab fa-instagram"></i></div>
+            </div>
+            <div class="social-item"><img src="images/product-2.jpg" alt="Instagram Post">
+                <div class="social-overlay"><i class="fab fa-instagram"></i></div>
+            </div>
+            <div class="social-item"><img src="images/look-urban-transit.jpg" alt="Instagram Post">
+                <div class="social-overlay"><i class="fab fa-instagram"></i></div>
+            </div>
+            <div class="social-item"><img src="images/look-tokyo-drift.jpg" alt="Instagram Post">
+                <div class="social-overlay"><i class="fab fa-instagram"></i></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════════ CONTACT SECTION ═══════════════════ -->
+    <section class="contact-section" id="contact">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-label">GET IN TOUCH</span>
+                <h2 class="section-title">Official North Support</h2>
+            </div>
+            <div class="contact-grid">
+                <div class="contact-info-cards">
+                    <div class="contact-card">
+                        <div class="contact-card-icon"><i class="fas fa-envelope"></i></div>
+                        <h3>Official Email</h3>
+                        <a href="mailto:rohit@wearnorth.com">rohit@wearnorth.com</a>
+                    </div>
+                    <div class="contact-card">
+                        <div class="contact-card-icon"><i class="fas fa-phone"></i></div>
+                        <h3>Customer Helpline</h3>
+                        <a href="tel:+919927345853">+91 9927345853 / 7082167660</a>
+                    </div>
+                    <div class="contact-card">
+                        <div class="contact-card-icon"><i class="fas fa-map-marker-alt"></i></div>
+                        <h3>Headquarters</h3>
+                        <p>India • Dispatching Worldwide</p>
+                    </div>
+                </div>
+                <form class="contact-form" id="contactForm" action="https://api.web3forms.com/submit" method="POST">
+                    <input type="hidden" name="access_key" value="YOUR_ACCESS_KEY_HERE">
+                    <input type="hidden" name="subject" value="New Message from NORTH Website">
+                    <input type="hidden" name="from_name" value="NORTH Website Contact Form">
+                    <input type="checkbox" name="botcheck" class="hidden" style="display:none">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <input type="text" name="name" placeholder="Your Name" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="email" name="email" placeholder="Your Email" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <input type="text" name="subject_line" placeholder="Order ID or Subject">
+                    </div>
+                    <div class="form-group">
+                        <textarea name="message" placeholder="How can we assist you?" rows="5" required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-lg">SEND MESSAGE</button>
+                    <p class="form-status" id="formStatus"
+                        style="margin-top:1rem; font-size:0.85rem; text-align:center;"></p>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════════ FOOTER ═══════════════════ -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <h2 class="footer-logo">NORTH</h2>
+                    <p class="footer-tagline">Always Move Forward</p>
+                    <p class="footer-desc">High-density heavyweight streetwear crafted for forward thinkers. Superior
+                        240 GSM cotton, thoughtful tailoring, and zero compromises.</p>
+                    <p style="font-size:0.82rem; color:var(--accent); margin-top:0.6rem;">
+                        <i class="fas fa-envelope"></i> rohit@wearnorth.com
+                    </p>
+                    <div class="footer-socials">
+                        <a href="https://www.instagram.com/north.always/" aria-label="Instagram"><i
+                                class="fab fa-instagram"></i></a>
+                        <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                        <a href="https://x.com/ArmanCodeLab" aria-label="Twitter"><i class="fab fa-x-twitter"></i></a>
+                        <a href="https://in.pinterest.com/wearnorth/" aria-label="Pinterest"><i
+                                class="fab fa-pinterest-p"></i></a>
+                    </div>
+                </div>
+                <div class="footer-links-group">
+                    <h3>Collections</h3>
+                    <ul>
+                        <li><a href="#collection">240 GSM Oversized Tees</a></li>
+                        <li><a href="#collection">Tactical Cargo Joggers</a></li>
+                        <li><a href="#collection">Heavyweight Hoodies</a></li>
+                        <li><a href="#combo">Streetwear Combo Builder</a></li>
+                        <li><a href="#lookbook">Curated Lookbook</a></li>
+                    </ul>
+                </div>
+                <div class="footer-links-group">
+                    <h3>Customer Care</h3>
+                    <ul>
+                        <li><a href="javascript:void(0)" id="footerOpenSizeGuide">Size & Fit Guide</a></li>
+                        <li><a href="javascript:void(0)" id="footerOpenAiFit">"Find My Fit" Recommender</a></li>
+                        <li><a href="javascript:void(0)" id="footerOpenTrack">Track Order</a></li>
+                        <li><a href="#contact">Contact Support</a></li>
+                        <li><a href="mailto:rohit@wearnorth.com">rohit@wearnorth.com</a></li>
+                    </ul>
+                </div>
+                <div class="footer-links-group">
+                    <h3>Brand Promise</h3>
+                    <ul>
+                        <li><a href="#fabric">Textile Lab (240 GSM)</a></li>
+                        <li><a href="#about">About North Mindset</a></li>
+                        <li><a href="#">7-Day Return Policy</a></li>
+                        <li><a href="#">Privacy Policy</a></li>
+                        <li><a href="#">Terms of Service</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 NORTH. All rights reserved. | Always Move Forward • Official Contact:
+                    rohit@wearnorth.com</p>
+                <div class="payment-methods">
+                    <span style="font-size:0.7rem; font-weight:700; color:var(--text-light); margin-right:8px;">SECURE
+                        PAYMENTS:</span>
+                    <i class="fab fa-google-pay" title="Google Pay"></i>
+                    <i class="fab fa-cc-visa" title="Visa"></i>
+                    <i class="fab fa-cc-mastercard" title="Mastercard"></i>
+                    <i class="fas fa-qrcode" title="Instant UPI"></i>
+                    <i class="fas fa-money-bill-wave" title="Cash on Delivery"></i>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ═══════════════════ BACK TO TOP ═══════════════════ -->
+    <button class="back-to-top" id="backToTop" aria-label="Back to Top">
+        <i class="fas fa-arrow-up"></i>
+    </button>
+
+    <!-- ═══════════════════ DRAWERS & MODALS ═══════════════════ -->
+
+    <!-- Backdrop Overlay -->
+    <div class="drawer-backdrop" id="drawerBackdrop"></div>
+    <div class="modal-backdrop" id="modalBackdrop"></div>
+
+    <!-- ─── SLIDE-OUT CART DRAWER ─── -->
+    <aside class="slide-drawer" id="cartDrawer" aria-label="Shopping Bag Drawer">
+        <div class="drawer-header">
+            <div class="drawer-title-wrap">
+                <i class="fas fa-shopping-bag"></i>
+                <h3>YOUR BAG</h3>
+                <span class="drawer-count-badge" id="cartHeaderBadge">0 ITEMS</span>
+            </div>
+            <button class="drawer-close-btn" id="closeCartDrawerBtn" aria-label="Close Bag">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <!-- 2-Tier Dynamic Free Shipping Meter -->
+        <div class="shipping-meter-box">
+            <div class="shipping-meter-text" id="shippingMeterText">
+                Add <strong>₹799</strong> more to unlock <strong>FREE Express Delivery</strong>!
+            </div>
+            <div class="shipping-progress-track">
+                <div class="shipping-progress-bar" id="shippingProgressBar" style="width: 0%;"></div>
+            </div>
+            <div class="shipping-tiers-milestones">
+                <span>₹0</span>
+                <span class="milestone-step" id="tierShipping">FREE DELIVERY (₹799)</span>
+                <span class="milestone-step" id="tierGift">FREE NORTH CAP (₹2,999)</span>
+            </div>
+        </div>
+
+        <!-- Cart Items List Container -->
+        <div class="cart-items-container" id="cartItemsContainer">
+            <!-- Dynamic Cart Items or Empty State injected via JavaScript -->
+        </div>
+
+        <!-- Cart Drawer Footer (Coupon Engine & Bill Summary) -->
+        <div class="drawer-footer" id="cartDrawerFooter">
+            <!-- Coupon Code Engine -->
+            <div class="coupon-box">
+                <div class="coupon-input-group">
+                    <i class="fas fa-ticket-alt coupon-icon"></i>
+                    <input type="text" id="couponCodeInput" placeholder="ENTER PROMO COUPON" maxlength="20">
+                    <button class="coupon-apply-btn" id="applyCouponBtn">APPLY</button>
+                </div>
+                <div class="coupon-tags-pills">
+                    <span class="coupon-quick-pill" data-code="NORTH300">⚡ NORTH300 (₹300 OFF)</span>
+                    <span class="coupon-quick-pill" data-code="MOVEFORWARD10">🔥 MOVEFORWARD10 (10% OFF)</span>
+                </div>
+                <div class="coupon-status-msg" id="couponStatusMsg"></div>
+            </div>
+
+            <!-- Bill Breakdown -->
+            <div class="bill-summary-list">
+                <div class="bill-row">
+                    <span>Bag Total (MRP)</span>
+                    <span id="billMrpTotal">₹0</span>
+                </div>
+                <div class="bill-row discount-row">
+                    <span>Bag Discount</span>
+                    <span id="billDiscount">-₹0</span>
+                </div>
+                <div class="bill-row discount-row" id="couponDiscountRow" style="display:none;">
+                    <span id="couponDiscountLabel">Coupon Discount</span>
+                    <span id="couponDiscountVal">-₹0</span>
+                </div>
+                <div class="bill-row">
+                    <span>Estimated Shipping</span>
+                    <span id="billShippingFee">FREE</span>
+                </div>
+                <div class="bill-row total-row">
+                    <span>Final Payable</span>
+                    <span class="bill-grand-total" id="billGrandTotal">₹0</span>
+                </div>
+            </div>
+
+            <button class="btn btn-primary" id="proceedToCheckoutBtn"
+                style="width:100%; font-size:0.88rem; padding:0.9rem;">
+                <i class="fas fa-lock" style="margin-right:6px;"></i> PROCEED TO SECURE CHECKOUT
+            </button>
+        </div>
+    </aside>
+
+    <!-- ─── SLIDE-OUT WISHLIST DRAWER ─── -->
+    <aside class="slide-drawer" id="wishlistDrawer" aria-label="Wishlist Drawer">
+        <div class="drawer-header">
+            <div class="drawer-title-wrap">
+                <i class="fas fa-heart" style="color:#ef4444;"></i>
+                <h3>SAVED DROPS</h3>
+                <span class="drawer-count-badge" id="wishlistHeaderBadge">0 ITEMS</span>
+            </div>
+            <button class="drawer-close-btn" id="closeWishlistDrawerBtn" aria-label="Close Wishlist">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <div class="wishlist-items-container" id="wishlistItemsContainer">
+            <!-- Dynamic Wishlist Items injected via JavaScript -->
+        </div>
+
+        <div class="drawer-footer" id="wishlistDrawerFooter">
+            <button class="btn btn-primary" id="moveAllWishlistToBagBtn" style="width:100%; margin-bottom:0.6rem;">
+                <i class="fas fa-shopping-bag"></i> MOVE ALL ITEMS TO BAG
+            </button>
+            <button class="btn btn-outline" id="clearWishlistBtn" style="width:100%;">
+                CLEAR WISHLIST
+            </button>
+        </div>
+    </aside>
+
+    <!-- ─── PREDICTIVE SEARCH OVERLAY MODAL ─── -->
+    <div class="search-modal" id="searchModal">
+        <div class="search-modal-container">
+            <div class="search-header-row">
+                <div class="search-input-box">
+                    <i class="fas fa-search search-input-icon"></i>
+                    <input type="text" id="predictiveSearchInput"
+                        placeholder="Search 240 GSM Tees, Cargo Joggers, Boxy Hoodies..." autocomplete="off">
+                    <button class="search-clear-btn" id="clearSearchInputBtn" style="display:none;"><i
+                            class="fas fa-times"></i></button>
+                </div>
+                <button class="search-close-btn" id="closeSearchModalBtn">ESC / CLOSE</button>
+            </div>
+
+            <!-- Quick search pill suggestions -->
+            <div class="search-popular-tags">
+                <span class="tag-title">QUICK SEARCH:</span>
+                <span class="quick-search-pill" data-search="240 GSM">240 GSM Tees</span>
+                <span class="quick-search-pill" data-search="Cargo">Cargo Joggers</span>
+                <span class="quick-search-pill" data-search="Hoodie">Boxy Hoodies</span>
+                <span class="quick-search-pill" data-search="Black">Midnight Black</span>
+                <span class="quick-search-pill" data-search="Sage">Vintage Sage</span>
+                <span class="quick-search-pill" data-search="Bomber">Flight Jacket</span>
+            </div>
+
+            <!-- Live Search Results Container -->
+            <div class="search-results-list" id="searchResultsList">
+                <!-- Search Result Items populated dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <!-- ─── PRODUCT QUICK VIEW MODAL ─── -->
+    <div class="product-quick-view-modal" id="quickViewModal">
+        <button class="modal-close-icon" id="closeQuickViewModalBtn" aria-label="Close Quick View">
+            <i class="fas fa-times"></i>
+        </button>
+        <div class="quick-view-grid" id="quickViewContent">
+            <!-- Injected dynamically via script.js for full reactivity -->
+        </div>
+    </div>
+
+    <!-- ─── "FIND MY FIT" AI RECOMMENDER MODAL ─── -->
+    <div class="fit-modal" id="fitModal">
+        <button class="modal-close-icon" id="closeFitModalBtn" aria-label="Close Recommender">
+            <i class="fas fa-times"></i>
+        </button>
+        <div class="fit-modal-header">
+            <div class="fit-modal-icon"><i class="fas fa-ruler-combined"></i></div>
+            <h3>Find Your Streetwear Fit</h3>
+            <p>Streetwear is all about the drape. Answer 3 quick questions to get our tailored size recommendation.</p>
+        </div>
+
+        <div class="fit-step-block">
+            <label class="fit-block-label">1. Your Height</label>
+            <select id="fitHeightSelect" class="fit-select">
+                <option value="5.4">5'2" - 5'4" (157 - 163 cm)</option>
+                <option value="5.6">5'5" - 5'7" (165 - 170 cm)</option>
+                <option value="5.9" selected>5'8" - 5'10" (172 - 178 cm)</option>
+                <option value="6.0">5'11" - 6'1" (180 - 185 cm)</option>
+                <option value="6.3">6'2"+ (188+ cm)</option>
+            </select>
+        </div>
+
+        <div class="fit-step-block">
+            <label class="fit-block-label">2. Body Frame</label>
+            <div class="fit-options-grid" id="fitBodyFrameOptions">
+                <button class="fit-opt-btn" data-frame="slim">Slim / Lean</button>
+                <button class="fit-opt-btn active" data-frame="regular">Regular / Medium</button>
+                <button class="fit-opt-btn" data-frame="athletic">Athletic / Muscular</button>
+                <button class="fit-opt-btn" data-frame="broad">Broad / Heavy</button>
+            </div>
+        </div>
+
+        <div class="fit-step-block">
+            <label class="fit-block-label">3. Preferred Silhouette</label>
+            <div class="fit-options-grid" id="fitStyleOptions">
+                <button class="fit-opt-btn" data-style="tailored">Tailored (Classic)</button>
+                <button class="fit-opt-btn active" data-style="boxy">Signature Boxy Drop</button>
+                <button class="fit-opt-btn" data-style="baggy">Mega Baggy Street</button>
+            </div>
+        </div>
+
+        <!-- Result Card -->
+        <div class="fit-result-card">
+            <span class="fit-result-badge">RECOMMENDED SIZE</span>
+            <div class="fit-recommended-size" id="fitRecommendedSizeText">SIZE L</div>
+            <p class="fit-rationale" id="fitRationaleText">Size L provides the ideal 240 GSM drop shoulder with loose
+                chest allowance and clean drape over your waistband.</p>
+        </div>
+
+        <button class="btn btn-primary" id="applyFitSizeBtn" style="width:100%;">
+            APPLY SIZE TO PRODUCT
+        </button>
+    </div>
+
+    <!-- ─── SIZE GUIDE MODAL ─── -->
+    <div class="size-guide-modal" id="sizeGuideModal">
+        <button class="modal-close-icon" id="closeSizeGuideModalBtn" aria-label="Close Size Guide">
+            <i class="fas fa-times"></i>
+        </button>
+        <div class="size-guide-header">
+            <h3>Streetwear Sizing Chart</h3>
+            <p>Measurements in inches (and cm). Designed true to oversized streetwear specifications.</p>
+        </div>
+
+        <div class="size-guide-tabs">
+            <button class="sg-tab active" data-tab="oversized">OVERSIZED 240 GSM TEES</button>
+            <button class="sg-tab" data-tab="cargo">CARGO JOGGERS</button>
+            <button class="sg-tab" data-tab="hoodies">BOXY HOODIES</button>
+        </div>
+
+        <table class="size-table" id="sizeGuideTable">
+            <thead>
+                <tr>
+                    <th>Size</th>
+                    <th>Chest (Inches)</th>
+                    <th>Length (Inches)</th>
+                    <th>Shoulder Drop</th>
+                </tr>
+            </thead>
+            <tbody id="sizeGuideTableBody">
+                <tr>
+                    <td><strong>S</strong></td>
+                    <td>42" (107 cm)</td>
+                    <td>28" (71 cm)</td>
+                    <td>20.5"</td>
+                </tr>
+                <tr>
+                    <td><strong>M</strong></td>
+                    <td>44" (112 cm)</td>
+                    <td>29" (74 cm)</td>
+                    <td>21.5"</td>
+                </tr>
+                <tr>
+                    <td><strong>L</strong></td>
+                    <td>46" (117 cm)</td>
+                    <td>30" (76 cm)</td>
+                    <td>22.5"</td>
+                </tr>
+                <tr>
+                    <td><strong>XL</strong></td>
+                    <td>48" (122 cm)</td>
+                    <td>31" (79 cm)</td>
+                    <td>23.5"</td>
+                </tr>
+                <tr>
+                    <td><strong>XXL</strong></td>
+                    <td>50" (127 cm)</td>
+                    <td>32" (81 cm)</td>
+                    <td>24.5"</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="how-to-measure-box">
+            <h4><i class="fas fa-info-circle"></i> How We Measure:</h4>
+            <p><strong>Chest:</strong> Measure across the fullest part of the chest from armpit to armpit, doubled.<br>
+                <strong>Length:</strong> Measure from the highest point of the neck seam down to the bottom hemline.<br>
+                <strong>Tip:</strong> If you prefer an authentic ultra-baggy Tokyo streetwear look, size up one notch.
+            </p>
+        </div>
+    </div>
+
+    <!-- ─── 3-STEP EXPRESS CHECKOUT MODAL ─── -->
+    <div class="checkout-modal" id="checkoutModal">
+        <button class="modal-close-icon" id="closeCheckoutModalBtn" aria-label="Close Checkout">
+            <i class="fas fa-times"></i>
+        </button>
+
+        <!-- Progress Steps -->
+        <div class="checkout-wizard-steps">
+            <div class="wizard-step active" id="wizardStep1">
+                <span class="step-num">1</span>
+                <span class="step-title">Shipping</span>
+            </div>
+            <div class="wizard-line" id="wizardLine1"></div>
+            <div class="wizard-step" id="wizardStep2">
+                <span class="step-num">2</span>
+                <span class="step-title">Payment</span>
+            </div>
+            <div class="wizard-line" id="wizardLine2"></div>
+            <div class="wizard-step" id="wizardStep3">
+                <span class="step-num">3</span>
+                <span class="step-title">Confirmation</span>
+            </div>
+        </div>
+
+        <!-- Step 1: Shipping Details Pane -->
+        <div class="checkout-step-pane active" id="checkoutPane1">
+            <div class="checkout-pane-header">
+                <h3>Delivery Address</h3>
+                <p>Provide your dispatch details for express doorstep delivery.</p>
+            </div>
+
+            <form id="checkoutShippingForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <input type="text" id="shipFullName" placeholder="Full Name *" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="tel" id="shipPhone" placeholder="10-Digit Mobile Number *" pattern="[0-9]{10}"
+                            required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <input type="email" id="shipEmail" placeholder="Email Address (for order tracking) *" required>
+                </div>
+                <div class="form-group">
+                    <input type="text" id="shipAddress" placeholder="Flat, House no., Building, Street Name *" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <input type="text" id="shipCity" placeholder="City *" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="text" id="shipState" placeholder="State *" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <input type="text" id="shipPincode" placeholder="6-Digit Indian PIN Code *" maxlength="6"
+                        pattern="[0-9]{6}" required>
+                </div>
+
+                <div class="checkout-order-summary-strip">
+                    <div>
+                        <span style="font-size:0.75rem; color:var(--text-light);">Payable Amount:</span>
+                        <div class="checkout-strip-price" id="checkoutStripPrice">₹0</div>
+                    </div>
+                    <button type="submit" class="btn btn-primary" id="continueToPaymentBtn">
+                        CONTINUE TO PAYMENT <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Step 2: Payment Methods Pane -->
+        <div class="checkout-step-pane" id="checkoutPane2">
+            <div class="checkout-pane-header">
+                <h3>Select Payment Method</h3>
+                <p>All transactions are 256-bit encrypted. Instant UPI & COD supported.</p>
+            </div>
+
+            <div class="payment-options-accordion">
+                <!-- UPI Option -->
+                <div class="payment-opt-card active" id="paymentOptUpi">
+                    <div class="payment-opt-header" onclick="window.northApp.selectPaymentMethod('upi')">
+                        <input type="radio" name="paymentMethod" id="payMethodUpi" value="upi" checked>
+                        <label for="payMethodUpi">
+                            <strong><i class="fas fa-bolt" style="color:#22c55e;"></i> Instant UPI (GPay / PhonePe /
+                                Paytm / BHIM)</strong>
+                            <span style="font-size:0.65rem; color:#22c55e; font-weight:800;">FASTEST</span>
+                        </label>
+                    </div>
+                    <div class="payment-opt-details" id="upiDetailsBlock">
+                        <p>Enter your Virtual Payment Address (UPI ID) or scan QR code on next step:</p>
+                        <div class="upi-input-group">
+                            <input type="text" id="userUpiId" placeholder="e.g. mobile@okaxis or yourname@paytm">
+                            <button type="button" class="btn btn-primary"
+                                style="padding:0.6rem 1rem; font-size:0.75rem;">VERIFY</button>
+                        </div>
+                        <div class="upi-apps-icons">
+                            <span class="upi-app-chip"><i class="fab fa-google-pay"></i> Google Pay</span>
+                            <span class="upi-app-chip"><i class="fas fa-mobile-alt"></i> PhonePe</span>
+                            <span class="upi-app-chip"><i class="fas fa-wallet"></i> Paytm UPI</span>
+                            <span class="upi-app-chip"><i class="fas fa-university"></i> BHIM</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cash on Delivery (COD) -->
+                <div class="payment-opt-card" id="paymentOptCod">
+                    <div class="payment-opt-header" onclick="window.northApp.selectPaymentMethod('cod')">
+                        <input type="radio" name="paymentMethod" id="payMethodCod" value="cod">
+                        <label for="payMethodCod">
+                            <strong><i class="fas fa-money-bill-wave"></i> Cash on Delivery (COD)</strong>
+                            <span style="font-size:0.65rem; color:var(--text-light); font-weight:700;">₹0 EXTRA
+                                FEE</span>
+                        </label>
+                    </div>
+                    <div class="payment-opt-details" id="codDetailsBlock" style="display:none;">
+                        <p>Pay cash or via UPI QR to the delivery courier at your doorstep. Please ensure the exact cash
+                            amount is available.</p>
+                    </div>
+                </div>
+
+                <!-- Cards / NetBanking -->
+                <div class="payment-opt-card" id="paymentOptCard">
+                    <div class="payment-opt-header" onclick="window.northApp.selectPaymentMethod('card')">
+                        <input type="radio" name="paymentMethod" id="payMethodCard" value="card">
+                        <label for="payMethodCard">
+                            <strong><i class="fas fa-credit-card"></i> Debit / Credit Card & NetBanking</strong>
+                            <span style="font-size:0.65rem; color:var(--text-light); font-weight:700;">ALL BANKS</span>
+                        </label>
+                    </div>
+                    <div class="payment-opt-details" id="cardDetailsBlock" style="display:none;">
+                        <div class="form-group" style="margin-bottom:0.6rem;">
+                            <input type="text" placeholder="Card Number" maxlength="19">
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <input type="text" placeholder="MM/YY" maxlength="5">
+                            </div>
+                            <div class="form-group">
+                                <input type="password" placeholder="CVV" maxlength="4">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="checkout-order-summary-strip">
+                <button type="button" class="btn btn-outline" id="backToShippingBtn">
+                    <i class="fas fa-arrow-left"></i> BACK
+                </button>
+                <button type="button" class="btn btn-primary" id="placeOrderBtn" style="padding:0.85rem 1.8rem;">
+                    <i class="fas fa-check-circle"></i> PLACE ORDER NOW
+                </button>
+            </div>
+        </div>
+
+        <!-- Step 3: Order Confirmation Pane -->
+        <div class="checkout-step-pane" id="checkoutPane3">
+            <div class="order-success-screen">
+                <div class="success-checkmark-circle">
+                    <i class="fas fa-check"></i>
+                </div>
+                <span class="success-tag">PAYMENT & ORDER CONFIRMED</span>
+                <h3 class="order-id-title" id="confirmedOrderId">NORTH-849201</h3>
+                <p class="order-thankyou-msg">Thank you for ordering with North. Your drop is being packed at our
+                    central warehouse and will be dispatched within 24 hours.</p>
+
+                <div class="order-tracking-card">
+                    <div class="tracking-item">
+                        <i class="fas fa-truck"></i>
+                        <div>
+                            <strong>Estimated Delivery</strong>
+                            <p id="confirmedDeliveryDate">2-3 Business Days</p>
+                        </div>
+                    </div>
+                    <div class="tracking-item">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <div>
+                            <strong>Delivering To</strong>
+                            <p id="confirmedCustomerCity">Customer Address</p>
+                        </div>
+                    </div>
+                    <div class="tracking-item">
+                        <i class="fas fa-headset"></i>
+                        <div>
+                            <strong>Official Support</strong>
+                            <p>rohit@wearnorth.com</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="order-summary-box">
+                    <h4>Order Summary</h4>
+                    <div id="confirmedItemsSummary"></div>
+                    <div class="confirmed-total-row">
+                        <span>Total Paid</span>
+                        <span id="confirmedTotalAmount">₹0</span>
+                    </div>
+                </div>
+
+                <div class="confirmed-actions-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:0.8rem; margin:1.2rem 0;">
+                    <button type="button" class="btn btn-primary" id="confirmedTrackLiveBtn">
+                        <i class="fas fa-truck-fast"></i> TRACK ORDER LIVE
+                    </button>
+                    <button type="button" class="btn btn-outline" id="confirmedInvoiceBtn">
+                        <i class="fas fa-file-invoice"></i> DOWNLOAD INVOICE
+                    </button>
+                </div>
+
+                <button class="btn btn-outline btn-lg" id="continueShoppingBtn" style="width:100%;">
+                    CONTINUE EXPLORING NORTH
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════ 1. LIVE ORDER TRACKING & HISTORY MODAL (FEATURE A) ═══════════════════ -->
+    <div class="track-order-modal" id="trackOrderModal">
+        <button class="modal-close-icon" id="closeTrackOrderModalBtn" aria-label="Close Tracking">
+            <i class="fas fa-times"></i>
+        </button>
+
+        <div class="track-modal-header">
+            <div class="track-modal-icon"><i class="fas fa-truck-fast"></i></div>
+            <h3>North Dispatch &amp; Order Center</h3>
+            <p>Live package timeline powered by Bluedart &amp; Delhivery Express API.</p>
+        </div>
+
+        <div class="track-nav-tabs">
+            <button class="track-tab active" data-tab="active">
+                <i class="fas fa-location-crosshairs"></i> Track Active Order
+            </button>
+            <button class="track-tab" data-tab="history">
+                <i class="fas fa-clock-rotate-left"></i> My Orders History (<span id="trackHistoryCountBadge">0</span>)
+            </button>
+        </div>
+
+        <!-- Tab 1: Active Order Tracking -->
+        <div class="track-tab-pane active" id="trackPaneActive">
+            <div class="track-search-bar">
+                <input type="text" id="trackSearchInput" placeholder="Enter Order ID (e.g. NORTH-849201) or Phone" maxlength="30">
+                <button type="button" class="btn btn-primary" id="trackSearchBtn">
+                    <i class="fas fa-search"></i> TRACK
+                </button>
+            </div>
+
+            <!-- Tracking Card Container -->
+            <div class="track-status-card" id="trackStatusCard">
+                <!-- Populated dynamically via script.js -->
+            </div>
+        </div>
+
+        <!-- Tab 2: Past Orders History -->
+        <div class="track-tab-pane" id="trackPaneHistory">
+            <div class="past-orders-list" id="pastOrdersList">
+                <!-- Populated dynamically via script.js -->
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════ 2. WRITE COMMUNITY REVIEW MODAL (FEATURE B) ═══════════════════ -->
+    <div class="write-review-modal" id="writeReviewModal">
+        <button class="modal-close-icon" id="closeWriteReviewModalBtn" aria-label="Close Review Form">
+            <i class="fas fa-times"></i>
+        </button>
+
+        <div class="write-review-header">
+            <div class="write-review-icon"><i class="fas fa-pen-fancy"></i></div>
+            <h3>Write A Verified Review</h3>
+            <p>Share your streetwear drape, fabric feel, and sizing advice with the North community.</p>
+        </div>
+
+        <form id="writeReviewForm">
+            <!-- 5-Star Interactive Rating -->
+            <div class="review-form-group text-center" style="margin-bottom:1.2rem; text-align:center;">
+                <label class="review-label" style="display:block; margin-bottom:0.4rem; font-weight:700;">Overall Rating</label>
+                <div class="interactive-star-picker" id="interactiveStarPicker">
+                    <i class="fas fa-star star-pick active" data-score="1"></i>
+                    <i class="fas fa-star star-pick active" data-score="2"></i>
+                    <i class="fas fa-star star-pick active" data-score="3"></i>
+                    <i class="fas fa-star star-pick active" data-score="4"></i>
+                    <i class="fas fa-star star-pick active" data-score="5"></i>
+                </div>
+                <span class="star-rating-caption" id="starRatingCaption">5.0 / 5.0 (Absolute Fire Fit)</span>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="review-label">Which Drop Did You Get? *</label>
+                    <select id="reviewDropSelect" class="fit-select" required>
+                        <option value="North 240 GSM Oversized Heavyweight Tee" selected>North 240 GSM Oversized Tee</option>
+                        <option value="Tactical 6-Pocket Cargo Joggers">Tactical 6-Pocket Cargo Joggers</option>
+                        <option value="Heavyweight Loop-Knit Boxy Hoodie">Heavyweight Loop-Knit Boxy Hoodie</option>
+                        <option value="Tokyo Drift Flight Bomber Jacket">Tokyo Drift Flight Bomber Jacket</option>
+                        <option value="Embroidered Heavyweight Dad Cap">Embroidered Heavyweight Dad Cap</option>
+                        <option value="Tactical Relaxed Track Pant">Tactical Relaxed Track Pant</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="review-label">Size Purchased *</label>
+                    <select id="reviewSizeSelect" class="fit-select" required>
+                        <option value="S">Size S (30)</option>
+                        <option value="M">Size M (32)</option>
+                        <option value="L" selected>Size L (34)</option>
+                        <option value="XL">Size XL (36)</option>
+                        <option value="XXL">Size XXL (38)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="review-label">Your Height (Optional)</label>
+                    <input type="text" id="reviewAuthorHeight" placeholder="e.g. 5'10 / 178 cm">
+                </div>
+                <div class="form-group">
+                    <label class="review-label">Fit Drape Experience</label>
+                    <select id="reviewFitExperience" class="fit-select">
+                        <option value="True to Boxy Oversized" selected>True to Boxy Oversized (10/10)</option>
+                        <option value="Slightly Slimmer Fit">Slightly Slimmer Fit</option>
+                        <option value="Ultra Baggy Tokyo Cut">Ultra Baggy Tokyo Cut</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="review-label">Your Name *</label>
+                    <input type="text" id="reviewAuthorName" placeholder="e.g. Kabir Sharma" required>
+                </div>
+                <div class="form-group">
+                    <label class="review-label">City *</label>
+                    <input type="text" id="reviewAuthorCity" placeholder="e.g. Mumbai / Delhi" required>
+                </div>
+            </div>
+
+            <div class="form-group" style="margin-bottom:1.2rem;">
+                <label class="review-label">Your Streetwear Feedback *</label>
+                <textarea id="reviewCommentText" rows="3" placeholder="Tell us how the collar, cotton density, and silhouette held up..." required></textarea>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width:100%; padding:0.9rem;">
+                <i class="fas fa-check-circle"></i> SUBMIT VERIFIED REVIEW
+            </button>
+        </form>
+    </div>
+
+    <!-- ═══════════════════ 3. DOWNLOADABLE TAX INVOICE MODAL (FEATURE C) ═══════════════════ -->
+    <div class="invoice-modal" id="invoiceModal">
+        <div class="invoice-modal-bar">
+            <span class="invoice-bar-title"><i class="fas fa-receipt"></i> Official Tax Invoice Receipt</span>
+            <div class="invoice-bar-actions">
+                <button type="button" class="btn btn-primary btn-sm" id="invoicePrintBtn">
+                    <i class="fas fa-print"></i> PRINT / SAVE PDF
+                </button>
+                <button class="modal-close-icon" id="closeInvoiceModalBtn" aria-label="Close Invoice">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Printable Invoice Sheet Container -->
+        <div class="invoice-sheet" id="invoicePrintArea">
+            <!-- Populated dynamically via script.js -->
+        </div>
+    </div>
+
+    <!-- ─── MOBILE APP BOTTOM NAVIGATION DOCK ─── -->
+    <nav class="mobile-bottom-dock" id="mobileBottomDock" aria-label="Mobile Navigation Dock">
+        <a href="#home" class="dock-item active">
+            <i class="fas fa-home"></i>
+            <span>Home</span>
+        </a>
+        <a href="#collection" class="dock-item">
+            <i class="fas fa-compass"></i>
+            <span>Explore</span>
+        </a>
+        <a href="#combo" class="dock-item dock-highlight">
+            <i class="fas fa-fire"></i>
+            <span>Combo</span>
+        </a>
+        <button class="dock-item" id="mobileWishlistDockBtn">
+            <div class="dock-icon-wrap">
+                <i class="fas fa-heart"></i>
+                <span class="dock-badge" id="mobileWishlistBadge">0</span>
+            </div>
+            <span>Wishlist</span>
+        </button>
+        <button class="dock-item" id="mobileCartDockBtn">
+            <div class="dock-icon-wrap">
+                <i class="fas fa-shopping-bag"></i>
+                <span class="dock-badge" id="mobileCartBadge">0</span>
+            </div>
+            <span>Bag</span>
+        </button>
+    </nav>
+
+    <!-- ─── TOAST NOTIFICATIONS CONTAINER ─── -->
+    <div class="toast-container" id="toastContainer" aria-live="polite"></div>
+
+    <!-- Main JavaScript Logic -->
+    <script src="script.js"></script>
+</body>
+
+</html>
