@@ -12,7 +12,8 @@ export default function NotificationDrawer() {
     markAsRead, 
     markAllNotificationsAsRead, 
     deleteNotification,
-    setIsTrackingOpen
+    setIsTrackingOpen,
+    setIsLaunchModalOpen
   } = useShop();
 
   const handleActionClick = (notif) => {
@@ -21,6 +22,8 @@ export default function NotificationDrawer() {
 
     if (notif.link === '#track') {
       setIsTrackingOpen(true);
+    } else if (notif.link === '#launch-calendar' || notif.type === 'drop') {
+      setIsLaunchModalOpen(true);
     } else if (notif.link && notif.link.startsWith('#')) {
       const target = document.querySelector(notif.link);
       if (target) {
@@ -128,6 +131,41 @@ export default function NotificationDrawer() {
 
         {/* Notifications List Body */}
         <div style={{ padding: '1rem', overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+          {/* Quick Launch Calendar Banner */}
+          <div
+            onClick={() => {
+              setIsNotificationOpen(false);
+              setIsLaunchModalOpen(true);
+            }}
+            style={{
+              background: 'linear-gradient(135deg, rgba(234, 179, 8, 0.16) 0%, rgba(245, 158, 11, 0.08) 100%)',
+              border: '1px solid rgba(234, 179, 8, 0.4)',
+              borderRadius: '8px',
+              padding: '10px 12px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '10px',
+              transition: 'all 0.2s'
+            }}
+            title="View Upcoming Product Launches & Drop Schedule"
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <i className="fas fa-rocket" style={{ color: 'var(--accent, #eab308)', fontSize: '1rem' }}></i>
+              <div>
+                <div style={{ fontSize: '0.78rem', fontWeight: 800, color: '#fff' }}>
+                  UPCOMING PRODUCT LAUNCHES
+                </div>
+                <div style={{ fontSize: '0.68rem', color: '#ccc' }}>
+                  3 new 240+ GSM drops scheduled. View dates & RSVP.
+                </div>
+              </div>
+            </div>
+            <span style={{ fontSize: '0.7rem', fontWeight: 800, color: 'var(--accent, #eab308)', whiteSpace: 'nowrap' }}>
+              VIEW &rarr;
+            </span>
+          </div>
           {notifications.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '4rem 1.5rem', color: '#888' }}>
               <i className="far fa-bell-slash" style={{ fontSize: '2.5rem', marginBottom: '1rem', opacity: 0.4 }}></i>

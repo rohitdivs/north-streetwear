@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { INITIAL_PRODUCTS, INITIAL_ORDERS, INITIAL_REVIEWS } from '../data/productsData';
+import { INITIAL_PRODUCTS, INITIAL_ORDERS, INITIAL_REVIEWS, UPCOMING_LAUNCHES } from '../data/productsData';
 
 const ShopContext = createContext();
 
@@ -102,6 +102,12 @@ export function ShopProvider({ children }) {
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [notifications, setNotifications] = useState(DEFAULT_NOTIFICATIONS);
 
+  // Upcoming Product Launches & Drop Dispatch System
+  const [upcomingLaunches, setUpcomingLaunches] = useState(UPCOMING_LAUNCHES);
+  const [isLaunchModalOpen, setIsLaunchModalOpen] = useState(false);
+  const [activeDropAlert, setActiveDropAlert] = useState(null);
+  const [remindedDropIds, setRemindedDropIds] = useState([]);
+
   // Initialize from LocalStorage once mounted on client
   useEffect(() => {
     try {
@@ -146,6 +152,9 @@ export function ShopProvider({ children }) {
           setIsAdminAuthenticated(true);
         }
       }
+
+      const savedReminded = localStorage.getItem('north_reminded_drops');
+      if (savedReminded) setRemindedDropIds(JSON.parse(savedReminded));
     } catch (e) {
       console.error('Error loading data from localStorage', e);
     }
@@ -169,6 +178,12 @@ export function ShopProvider({ children }) {
       localStorage.setItem('north_cart', JSON.stringify(cart));
     } catch (e) {}
   }, [cart]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('north_reminded_drops', JSON.stringify(remindedDropIds));
+    } catch (e) {}
+  }, [remindedDropIds]);
 
   useEffect(() => {
     try {
@@ -300,6 +315,7 @@ export function ShopProvider({ children }) {
       setPendingUserOtp(null);
       setIsAuthModalOpen(false);
       showToast(`Welcome, ${user.name}! Logged in as ${user.role === 'admin' ? 'Administrator' : 'VIP Member'}.`, 'success');
+      triggerUserLoginNotifications(user);
       return { success: true, user };
     } else {
       return { success: false, error: 'Invalid or expired OTP code. Please check the top banner or enter the active code.' };
@@ -324,6 +340,7 @@ export function ShopProvider({ children }) {
     }
     setIsAuthModalOpen(false);
     showToast(`Welcome back, ${user.name}!`, 'success');
+    triggerUserLoginNotifications(user);
     return { success: true, user };
   };
 
@@ -380,6 +397,7 @@ export function ShopProvider({ children }) {
     }
     setIsAuthModalOpen(false);
     showToast(`Welcome to NORTH, ${newUser.name}! Your account has been registered.`);
+    triggerUserLoginNotifications(newUser);
     return { success: true, user: newUser };
   };
 
@@ -610,6 +628,97 @@ export function ShopProvider({ children }) {
 
   const unreadNotificationsCount = notifications.filter(n => !n.read).length;
 
+  // Toggle Drop Launch Reminder
+  const toggleDropReminder = (dropId) => {
+    const item = upcomingLaunches.find(l => l.id === dropId);
+    setRemindedDropIds(prev => {
+      const exists = prev.includes(dropId);
+      if (exists) {
+        showToast(`Drop reminder removed for "${item?.name || 'Product'}"`, 'info');
+        return prev.filter(id => id !== dropId);
+      } else {
+        showToast(`🔔 Drop reminder set! You will get early alerts for "${item?.name || 'Product'}".`, 'success');
+        return [...prev, dropId];
+      }
+    });
+  };
+
+  // Request browser native push notification permission
+  const requestDeviceNotifications = async () => {
+    if (typeof window === 'undefined' || !('Notification' in window)) {
+      showToast('Push notifications not supported on this browser.', 'error');
+      return 'denied';
+    }
+    try {
+      const perm = await Notification.requestPermission();
+      if (perm === 'granted') {
+        showToast('✅ Device notifications enabled! You will receive drop alerts on your screen.', 'success');
+        try {
+          new Notification('NORTH Streetwear — Launch Alerts Active!', {
+            body: 'You are now connected! Exclusive drop alerts will be delivered straight to your device.',
+            icon: '/images/product-1.jpg'
+          });
+        } catch (err) {}
+      } else {
+        showToast('Notifications permission was not granted.', 'info');
+      }
+      return perm;
+    } catch (e) {
+      console.error('Error requesting notification permission', e);
+      return 'default';
+    }
+  };
+
+  // Automated Dispatch: Send product launch updates when user logs in / registers
+  const triggerUserLoginNotifications = (user) => {
+    if (!user) return;
+    const firstName = user.name ? user.name.split(' ')[0] : 'Member';
+
+    // 1. Dispatch launch notifications directly into user's notification drawer
+    const dropNotif1 = {
+      id: `launch-notif-1-${Date.now()}`,
+      title: `🚀 UPCOMING DROP: Acid-Wash 280 GSM Tee`,
+      message: `Dropping this Friday at 8:00 PM IST. Hey ${firstName}, your VIP 1-Hour Early Access Pass is active!`,
+      time: 'Just now',
+      type: 'drop',
+      read: false,
+      link: '#collection'
+    };
+
+    const dropNotif2 = {
+      id: `launch-notif-2-${Date.now() + 1}`,
+      title: `❄️ WINTER CAPSULE: 420 GSM Cyber-Chrome Zip Hoodie`,
+      message: `Scheduled for launch Monday, Oct 5th at 12:00 PM. VIP members reserve first.`,
+      time: 'Upcoming Drop',
+      type: 'drop',
+      read: false,
+      link: '#collection'
+    };
+
+    setNotifications(prev => {
+      const filtered = prev.filter(n => !n.title.includes('Acid-Wash 280 GSM Tee'));
+      return [dropNotif1, dropNotif2, ...filtered];
+    });
+
+    // 2. Display on-screen interactive "VIP Launch Dispatch" card in their hand
+    setTimeout(() => {
+      setActiveDropAlert({
+        title: `Upcoming Drops Dispatched to You!`,
+        message: `Welcome ${firstName}! 3 new 240+ GSM drops are launching soon. Check your drop calendar and early access times.`
+      });
+    }, 600);
+
+    // 3. Deliver Native System Push Notification (Mobile/Desktop Notification)
+    if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
+      try {
+        new Notification(`NORTH Streetwear — Welcome ${firstName}!`, {
+          body: `Upcoming Drop 05 (Acid-Wash 280 GSM Tee) launches this Friday 8 PM. VIP Early Access unlocked!`,
+          icon: '/images/product-1.jpg'
+        });
+      } catch (err) {}
+    }
+  };
+
   return (
     <ShopContext.Provider value={{
       products,
@@ -663,6 +772,16 @@ export function ShopProvider({ children }) {
       markAsRead,
       markAllNotificationsAsRead,
       deleteNotification,
+      // Upcoming Launches & Drop Dispatch
+      upcomingLaunches,
+      isLaunchModalOpen,
+      setIsLaunchModalOpen,
+      activeDropAlert,
+      setActiveDropAlert,
+      remindedDropIds,
+      toggleDropReminder,
+      requestDeviceNotifications,
+      triggerUserLoginNotifications,
       // Operations
       addToCart,
       removeFromCart,

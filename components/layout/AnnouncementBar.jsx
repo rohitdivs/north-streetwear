@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { useShop } from '../../context/ShopContext';
 
 export default function AnnouncementBar() {
-  const { showToast, setIsNotificationOpen, unreadNotificationsCount } = useShop();
+  const { showToast, setIsNotificationOpen, unreadNotificationsCount, setIsLaunchModalOpen } = useShop();
   const [isVisible, setIsVisible] = useState(true);
 
   if (!isVisible) return null;
@@ -112,6 +112,29 @@ export default function AnnouncementBar() {
           flexShrink: 0
         }}
       >
+        <button
+          type="button"
+          onClick={() => setIsLaunchModalOpen(true)}
+          style={{
+            background: 'rgba(234, 179, 8, 0.15)',
+            border: '1px solid rgba(234, 179, 8, 0.4)',
+            borderRadius: '12px',
+            color: 'var(--accent, #eab308)',
+            fontSize: '0.62rem',
+            fontWeight: 800,
+            padding: '2px 8px',
+            cursor: 'pointer',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '4px',
+            letterSpacing: '0.5px'
+          }}
+          title="Open Upcoming Drops & Launch Calendar"
+        >
+          <i className="fas fa-rocket" style={{ fontSize: '0.6rem' }}></i>
+          DROPS CALENDAR
+        </button>
+
         <button
           type="button"
           onClick={() => setIsNotificationOpen(true)}
