@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { INITIAL_PRODUCTS, INITIAL_ORDERS, INITIAL_REVIEWS, UPCOMING_LAUNCHES } from '../data/productsData';
+import { INITIAL_PRODUCTS, INITIAL_ORDERS, INITIAL_REVIEWS, UPCOMING_LAUNCHES, INITIAL_DEFECT_REPORTS } from '../data/productsData';
 
 const ShopContext = createContext();
 
@@ -108,6 +108,11 @@ export function ShopProvider({ children }) {
   const [activeDropAlert, setActiveDropAlert] = useState(null);
   const [remindedDropIds, setRemindedDropIds] = useState([]);
 
+  // Defective Product Report & Quality Feedback System
+  const [defectReports, setDefectReports] = useState(INITIAL_DEFECT_REPORTS);
+  const [isDefectModalOpen, setIsDefectModalOpen] = useState(false);
+  const [defectModalPrefillOrder, setDefectModalPrefillOrder] = useState(null);
+
   // Initialize from LocalStorage once mounted on client
   useEffect(() => {
     try {
@@ -155,6 +160,9 @@ export function ShopProvider({ children }) {
 
       const savedReminded = localStorage.getItem('north_reminded_drops');
       if (savedReminded) setRemindedDropIds(JSON.parse(savedReminded));
+
+      const savedDefects = localStorage.getItem('north_defect_reports');
+      if (savedDefects) setDefectReports(JSON.parse(savedDefects));
     } catch (e) {
       console.error('Error loading data from localStorage', e);
     }
@@ -184,6 +192,12 @@ export function ShopProvider({ children }) {
       localStorage.setItem('north_reminded_drops', JSON.stringify(remindedDropIds));
     } catch (e) {}
   }, [remindedDropIds]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('north_defect_reports', JSON.stringify(defectReports));
+    } catch (e) {}
+  }, [defectReports]);
 
   useEffect(() => {
     try {
@@ -719,6 +733,81 @@ export function ShopProvider({ children }) {
     }
   };
 
+  // Submit Defective Product Report & Quality Feedback
+  const submitDefectReport = ({ 
+    orderId, 
+    productName, 
+    defectType, 
+    description, 
+    resolution, 
+    customerName, 
+    customerEmail, 
+    customerPhone, 
+    pickupAddress, 
+    images 
+  }) => {
+    const report = {
+      id: `DEF-${Math.floor(10000 + Math.random() * 90000)}`,
+      date: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }),
+      orderId: orderId || 'NORTH-DIRECT-PURCHASE',
+      productName,
+      defectType,
+      description,
+      resolution,
+      customerName: customerName || (currentUser?.name || 'Valued Customer'),
+      customerEmail: customerEmail || (currentUser?.email || ''),
+      customerPhone: customerPhone || (currentUser?.phone || ''),
+      pickupAddress: pickupAddress || 'Doorstep Pickup Address on File',
+      images: images || [],
+      status: 'Pending QC Review',
+      adminNote: 'Ticket generated. Senior quality inspector assigned for reverse doorstep inspection.'
+    };
+
+    setDefectReports(prev => [report, ...prev]);
+
+    // Dispatch update to notification drawer
+    const notif = {
+      id: `defect-notif-${Date.now()}`,
+      title: `⚠️ Defect Ticket #${report.id} Created`,
+      message: `Your report for "${productName}" has been logged with ${images?.length || 0} photo(s). Chosen resolution: ${resolution}.`,
+      time: 'Just now',
+      type: 'order',
+      read: false,
+      link: '#track'
+    };
+    setNotifications(prev => [notif, ...prev]);
+    showToast(`Defect report logged! Ticket #${report.id} generated.`, 'success');
+
+    return { success: true, report };
+  };
+
+  // Admin: Update Defect Report Status & Notes
+  const updateDefectReportStatus = (reportId, newStatus, adminNote) => {
+    setDefectReports(prev => prev.map(r => {
+      if (r.id === reportId) {
+        return {
+          ...r,
+          status: newStatus,
+          adminNote: adminNote !== undefined ? adminNote : r.adminNote
+        };
+      }
+      return r;
+    }));
+
+    // Update Notification for customer
+    const updateNotif = {
+      id: `defect-update-${Date.now()}`,
+      title: `📦 Defect Ticket #${reportId} Updated`,
+      message: `Status changed to "${newStatus}". ${adminNote ? `Resolution Note: ${adminNote}` : ''}`,
+      time: 'Just now',
+      type: 'order',
+      read: false,
+      link: '#track'
+    };
+    setNotifications(prev => [updateNotif, ...prev]);
+    showToast(`Defect report #${reportId} updated to "${newStatus}"!`, 'info');
+  };
+
   return (
     <ShopContext.Provider value={{
       products,
@@ -782,6 +871,14 @@ export function ShopProvider({ children }) {
       toggleDropReminder,
       requestDeviceNotifications,
       triggerUserLoginNotifications,
+      // Defective Product Report & Quality Feedback
+      defectReports,
+      isDefectModalOpen,
+      setIsDefectModalOpen,
+      defectModalPrefillOrder,
+      setDefectModalPrefillOrder,
+      submitDefectReport,
+      updateDefectReportStatus,
       // Operations
       addToCart,
       removeFromCart,

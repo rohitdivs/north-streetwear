@@ -471,3 +471,24 @@ export const UPCOMING_LAUNCHES = [
   }
 ];
 
+export const INITIAL_DEFECT_REPORTS = [
+  {
+    id: 'DEF-89214',
+    date: '24 Sep 2026, 02:40 PM',
+    orderId: 'NORTH-782104',
+    productName: 'Tokyo Drift Flight Bomber Jacket',
+    customerName: 'Sahil Kapoor',
+    customerEmail: 'sahil.kapoor@gmail.com',
+    customerPhone: '9820149202',
+    defectType: 'Zipper / Hardware Defect',
+    description: 'The front matte zipper slider is misaligned and gets jammed around mid-chest. Please arrange a fresh replacement piece in Size M.',
+    resolution: 'Replacement (Free Express Dispatch)',
+    images: [
+      '/images/product-4.jpg'
+    ],
+    status: 'Approved - Replacement Dispatched',
+    adminNote: 'Defect confirmed from photos. Replacement piece dispatched via Bluedart AWB #BLU-88210492.'
+  }
+];
+
+

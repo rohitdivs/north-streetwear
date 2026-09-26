@@ -4,7 +4,15 @@ import React, { useState } from 'react';
 import { useShop } from '../../context/ShopContext';
 
 export default function OrderTrackingModal() {
-  const { orders, isTrackingOpen, setIsTrackingOpen, showToast, currentUser } = useShop();
+  const { 
+    orders, 
+    isTrackingOpen, 
+    setIsTrackingOpen, 
+    showToast, 
+    currentUser,
+    setIsDefectModalOpen,
+    setDefectModalPrefillOrder
+  } = useShop();
   const [activeTab, setActiveTab] = useState('track'); // 'track' or 'history'
   const [searchQuery, setSearchQuery] = useState('NORTH-849201');
   const [foundOrder, setFoundOrder] = useState(orders[0] || null);
@@ -234,6 +242,36 @@ export default function OrderTrackingModal() {
                       <strong>₹{(item.price * item.qty).toLocaleString('en-IN')}</strong>
                     </div>
                   ))}
+
+                  {/* Report Defect / Return Button */}
+                  <div style={{ marginTop: '1rem', paddingTop: '0.8rem', borderTop: '1px solid rgba(255,255,255,0.08)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+                    <span style={{ fontSize: '0.74rem', color: '#999' }}>
+                      Issue with this delivery? (Defect / Damaged piece)
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsTrackingOpen(false);
+                        setDefectModalPrefillOrder(foundOrder);
+                        setIsDefectModalOpen(true);
+                      }}
+                      style={{
+                        background: 'rgba(239, 68, 68, 0.15)',
+                        border: '1px solid rgba(239, 68, 68, 0.4)',
+                        color: '#f87171',
+                        borderRadius: '6px',
+                        padding: '6px 12px',
+                        fontSize: '0.75rem',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px'
+                      }}
+                    >
+                      <i className="fas fa-triangle-exclamation"></i> Report Defect / Return
+                    </button>
+                  </div>
                 </div>
               </div>
             ) : (

@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useShop } from '../../context/ShopContext';
 
 export default function Footer() {
-  const { setIsTrackingOpen, setIsSizeGuideOpen, setIsFitModalOpen } = useShop();
+  const { setIsTrackingOpen, setIsSizeGuideOpen, setIsFitModalOpen, setIsDefectModalOpen } = useShop();
 
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -80,6 +80,29 @@ export default function Footer() {
                     style={{ background: 'none', border: 'none', color: 'inherit', cursor: 'pointer', padding: 0, font: 'inherit' }}
                   >
                     Track Order Live
+                  </button>
+                </li>
+                <li>
+                  <button 
+                    type="button" 
+                    onClick={() => setIsDefectModalOpen(true)} 
+                    style={{ 
+                      background: 'rgba(239, 68, 68, 0.1)', 
+                      border: '1px solid rgba(239, 68, 68, 0.25)', 
+                      color: '#f87171', 
+                      cursor: 'pointer', 
+                      padding: '4px 8px', 
+                      borderRadius: '6px',
+                      font: 'inherit', 
+                      fontWeight: 700,
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      fontSize: '0.8rem',
+                      marginTop: '4px'
+                    }}
+                  >
+                    <i className="fas fa-triangle-exclamation"></i> Report Defective Product
                   </button>
                 </li>
                 <li><a href="#contact">Contact Support</a></li>

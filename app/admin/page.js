@@ -22,7 +22,9 @@ export default function AdminPortal() {
     setPendingUserOtp,
     notifications,
     addNotification,
-    deleteNotification
+    deleteNotification,
+    defectReports,
+    updateDefectReportStatus
   } = useShop();
 
   // Admin Gate Login Form State
@@ -34,10 +36,12 @@ export default function AdminPortal() {
   const [authLoading, setAuthLoading] = useState(false);
 
   // Dashboard State
-  const [activeTab, setActiveTab] = useState('overview'); // 'overview', 'pricing', 'orders', 'inventory'
+  const [activeTab, setActiveTab] = useState('overview'); // 'overview', 'pricing', 'orders', 'inventory', 'defects'
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
   const [selectedTrackingOrder, setSelectedTrackingOrder] = useState(null);
+  const [defectFilter, setDefectFilter] = useState('all');
+  const [selectedDefectPhoto, setSelectedDefectPhoto] = useState(null);
 
   // New/Edit product form state
   const [prodName, setProdName] = useState('');
@@ -1066,7 +1070,8 @@ export default function AdminPortal() {
             { key: 'pricing', label: `Pricing & Products (${products.length})`, icon: 'fa-tags' },
             { key: 'orders', label: `Order Tracking & Route Tracing (${orders.length})`, icon: 'fa-route' },
             { key: 'inventory', label: 'Inventory Controller', icon: 'fa-warehouse' },
-            { key: 'notifications', label: `Notifications Center (${notifications?.length || 0})`, icon: 'fa-bell' }
+            { key: 'notifications', label: `Notifications Center (${notifications?.length || 0})`, icon: 'fa-bell' },
+            { key: 'defects', label: `Defect Reports (${defectReports?.length || 0})`, icon: 'fa-triangle-exclamation' }
           ].map(tab => (
             <button
               key={tab.key}
@@ -1696,6 +1701,346 @@ export default function AdminPortal() {
                 </div>
               </div>
             </div>
+          </div>
+        )}
+
+        {/* ═════════════════════════════════════════════════════════════════
+            TAB 6: DEFECTIVE PRODUCT REPORTS & QC AUDIT
+        ══════════════════════════════════════════════════════════════════ */}
+        {activeTab === 'defects' && (
+          <div>
+            {/* Header + Stats */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '1.75rem' }}>
+              <div style={{ background: '#141418', border: '1px solid rgba(255,255,255,0.08)', padding: '1.25rem', borderRadius: '10px' }}>
+                <div style={{ fontSize: '0.72rem', color: '#9ca3af', fontWeight: 700, textTransform: 'uppercase' }}>Total Defect Tickets</div>
+                <div style={{ fontSize: '1.8rem', fontWeight: 900, color: '#fff', marginTop: '4px' }}>{defectReports?.length || 0}</div>
+                <span style={{ fontSize: '0.72rem', color: '#9ca3af' }}>Customer grievance claims</span>
+              </div>
+              <div style={{ background: '#141418', border: '1px solid rgba(239, 68, 68, 0.25)', padding: '1.25rem', borderRadius: '10px' }}>
+                <div style={{ fontSize: '0.72rem', color: '#f87171', fontWeight: 700, textTransform: 'uppercase' }}>Pending QC / Review</div>
+                <div style={{ fontSize: '1.8rem', fontWeight: 900, color: '#ef4444', marginTop: '4px' }}>
+                  {(defectReports || []).filter(r => r.status === 'Pending Review' || r.status === 'Under QC Inspection').length}
+                </div>
+                <span style={{ fontSize: '0.72rem', color: '#fca5a5' }}>Requires urgent inspection</span>
+              </div>
+              <div style={{ background: '#141418', border: '1px solid rgba(59, 130, 246, 0.25)', padding: '1.25rem', borderRadius: '10px' }}>
+                <div style={{ fontSize: '0.72rem', color: '#60a5fa', fontWeight: 700, textTransform: 'uppercase' }}>Replacements Dispatched</div>
+                <div style={{ fontSize: '1.8rem', fontWeight: 900, color: '#3b82f6', marginTop: '4px' }}>
+                  {(defectReports || []).filter(r => r.status === 'Approved Replacement').length}
+                </div>
+                <span style={{ fontSize: '0.72rem', color: '#93c5fd' }}>Fresh pieces shipped</span>
+              </div>
+              <div style={{ background: '#141418', border: '1px solid rgba(34, 197, 94, 0.25)', padding: '1.25rem', borderRadius: '10px' }}>
+                <div style={{ fontSize: '0.72rem', color: '#4ade80', fontWeight: 700, textTransform: 'uppercase' }}>Resolved / Refunded</div>
+                <div style={{ fontSize: '1.8rem', fontWeight: 900, color: '#22c55e', marginTop: '4px' }}>
+                  {(defectReports || []).filter(r => r.status === 'Resolved' || r.status === 'Approved Refund').length}
+                </div>
+                <span style={{ fontSize: '0.72rem', color: '#86efac' }}>Full customer satisfaction</span>
+              </div>
+            </div>
+
+            {/* Filter Pill Row */}
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '1.5rem' }}>
+              {[
+                { id: 'all', label: `All Reports (${defectReports?.length || 0})` },
+                { id: 'Pending Review', label: 'Pending Review' },
+                { id: 'Under QC Inspection', label: 'Under QC' },
+                { id: 'Approved Replacement', label: 'Approved Replacement' },
+                { id: 'Approved Refund', label: 'Approved Refund' },
+                { id: 'Resolved', label: 'Resolved' }
+              ].map(f => (
+                <button
+                  key={f.id}
+                  onClick={() => setDefectFilter(f.id)}
+                  style={{
+                    padding: '6px 14px',
+                    borderRadius: '20px',
+                    border: defectFilter === f.id ? '1px solid var(--accent, #eab308)' : '1px solid rgba(255,255,255,0.1)',
+                    background: defectFilter === f.id ? 'rgba(234, 179, 8, 0.15)' : 'rgba(255,255,255,0.04)',
+                    color: defectFilter === f.id ? 'var(--accent, #eab308)' : '#9ca3af',
+                    fontSize: '0.78rem',
+                    fontWeight: 700,
+                    cursor: 'pointer'
+                  }}
+                >
+                  {f.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Reports List */}
+            {(!defectReports || defectReports.length === 0) ? (
+              <div style={{ background: '#141418', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '3rem', textAlign: 'center' }}>
+                <i className="fas fa-circle-check" style={{ fontSize: '2.5rem', color: '#22c55e', marginBottom: '1rem' }}></i>
+                <h3 style={{ fontSize: '1.1rem', fontWeight: 800, margin: '0 0 6px' }}>Zero Defective Reports</h3>
+                <p style={{ fontSize: '0.82rem', color: '#9ca3af', margin: 0 }}>Every shipped streetwear parcel currently passes 100% Quality Inspection.</p>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                {defectReports
+                  .filter(r => defectFilter === 'all' || r.status === defectFilter)
+                  .map(report => (
+                    <div
+                      key={report.id}
+                      style={{
+                        background: '#141418',
+                        border: '1px solid rgba(255,255,255,0.08)',
+                        borderRadius: '12px',
+                        padding: '1.5rem',
+                        boxShadow: '0 4px 20px rgba(0,0,0,0.4)'
+                      }}
+                    >
+                      {/* Ticket Header */}
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem', borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '1rem', marginBottom: '1rem' }}>
+                        <div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <span style={{ fontSize: '1rem', fontWeight: 900, color: 'var(--accent, #eab308)', letterSpacing: '0.05em' }}>
+                              #{report.id}
+                            </span>
+                            <span style={{
+                              fontSize: '0.7rem',
+                              fontWeight: 800,
+                              padding: '2px 8px',
+                              borderRadius: '4px',
+                              background: report.status === 'Pending Review' ? 'rgba(239, 68, 68, 0.15)' :
+                                report.status === 'Under QC Inspection' ? 'rgba(234, 179, 8, 0.15)' :
+                                report.status === 'Approved Replacement' ? 'rgba(59, 130, 246, 0.15)' :
+                                report.status === 'Approved Refund' ? 'rgba(168, 85, 247, 0.15)' :
+                                'rgba(34, 197, 94, 0.15)',
+                              color: report.status === 'Pending Review' ? '#ef4444' :
+                                report.status === 'Under QC Inspection' ? '#eab308' :
+                                report.status === 'Approved Replacement' ? '#60a5fa' :
+                                report.status === 'Approved Refund' ? '#c084fc' :
+                                '#22c55e',
+                              border: '1px solid currentColor'
+                            }}>
+                              {report.status}
+                            </span>
+                          </div>
+                          <div style={{ fontSize: '0.74rem', color: '#9ca3af', marginTop: '4px' }}>
+                            Reported on {new Date(report.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                          </div>
+                        </div>
+
+                        {/* Customer & Order pills */}
+                        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                          <span style={{ fontSize: '0.75rem', background: 'rgba(255,255,255,0.06)', padding: '4px 10px', borderRadius: '6px', color: '#d1d5db' }}>
+                            <i className="fas fa-receipt" style={{ marginRight: '6px', color: 'var(--accent)' }}></i>
+                            Order: <strong>{report.orderId}</strong>
+                          </span>
+                          <span style={{ fontSize: '0.75rem', background: 'rgba(255,255,255,0.06)', padding: '4px 10px', borderRadius: '6px', color: '#d1d5db' }}>
+                            <i className="fas fa-user" style={{ marginRight: '6px', color: 'var(--accent)' }}></i>
+                            {report.customerName}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Main details grid: Info + Uploaded Images */}
+                      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(280px, 1.4fr) minmax(240px, 1fr)', gap: '1.5rem', marginBottom: '1.25rem' }}>
+                        <div>
+                          <div style={{ marginBottom: '0.75rem' }}>
+                            <div style={{ fontSize: '0.72rem', textTransform: 'uppercase', color: '#9ca3af', fontWeight: 700 }}>Damaged Item & Defect Type</div>
+                            <div style={{ fontSize: '0.92rem', fontWeight: 800, color: '#fff', marginTop: '2px' }}>
+                              {report.productName} {report.productColor && <span style={{ color: '#9ca3af', fontWeight: 500 }}>({report.productColor})</span>}
+                            </div>
+                            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', marginTop: '4px', fontSize: '0.75rem', background: 'rgba(239,68,68,0.1)', color: '#f87171', padding: '3px 8px', borderRadius: '4px', border: '1px solid rgba(239,68,68,0.2)' }}>
+                              <i className="fas fa-triangle-exclamation"></i>
+                              {report.defectCategoryLabel || report.defectCategory}
+                            </div>
+                          </div>
+
+                          <div style={{ marginBottom: '0.75rem' }}>
+                            <div style={{ fontSize: '0.72rem', textTransform: 'uppercase', color: '#9ca3af', fontWeight: 700 }}>Customer's Concern / Feedback:</div>
+                            <div style={{ fontSize: '0.84rem', color: '#e5e7eb', background: 'rgba(0,0,0,0.3)', padding: '10px 12px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.06)', marginTop: '4px', lineHeight: 1.5 }}>
+                              "{report.description}"
+                            </div>
+                          </div>
+
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', fontSize: '0.75rem' }}>
+                            <div>
+                              <span style={{ color: '#9ca3af', display: 'block' }}>Customer Request:</span>
+                              <span style={{ fontWeight: 800, color: report.resolutionPreference === 'replacement' ? '#60a5fa' : report.resolutionPreference === 'refund' ? '#c084fc' : '#eab308' }}>
+                                {report.resolutionPreference === 'replacement' ? '🔄 Free Replacement' :
+                                 report.resolutionPreference === 'refund' ? '💸 Full Refund to Source' :
+                                 '🎁 Store Credit + ₹200 Goodwill'}
+                              </span>
+                            </div>
+                            <div>
+                              <span style={{ color: '#9ca3af', display: 'block' }}>Contact Details:</span>
+                              <span style={{ color: '#fff' }}>📱 {report.customerPhone} • {report.customerEmail}</span>
+                            </div>
+                          </div>
+
+                          {report.pickupAddress && (
+                            <div style={{ marginTop: '8px', fontSize: '0.74rem', color: '#9ca3af' }}>
+                              📍 Reverse Pickup: <span style={{ color: '#e5e7eb' }}>{report.pickupAddress}</span>
+                            </div>
+                          )}
+
+                          {report.statusNote && (
+                            <div style={{ marginTop: '8px', fontSize: '0.74rem', color: 'var(--accent, #eab308)', background: 'rgba(234,179,8,0.08)', padding: '6px 10px', borderRadius: '6px' }}>
+                              ⚡ Note: {report.statusNote}
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Customer Uploaded Defect Photos */}
+                        <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '10px', padding: '1rem' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                            <div style={{ fontSize: '0.72rem', textTransform: 'uppercase', color: '#9ca3af', fontWeight: 700 }}>
+                              <i className="fas fa-camera" style={{ marginRight: '6px', color: 'var(--accent)' }}></i>
+                              Uploaded Defect Evidence ({report.images?.length || 0})
+                            </div>
+                            <span style={{ fontSize: '0.68rem', color: '#666' }}>Click to zoom</span>
+                          </div>
+
+                          {(!report.images || report.images.length === 0) ? (
+                            <div style={{ padding: '2rem 1rem', textAlign: 'center', color: '#666', fontSize: '0.76rem' }}>
+                              No defect photos attached by customer
+                            </div>
+                          ) : (
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(70px, 1fr))', gap: '8px' }}>
+                              {report.images.map((imgUrl, idx) => (
+                                <button
+                                  key={idx}
+                                  type="button"
+                                  onClick={() => setSelectedDefectPhoto({ url: imgUrl, reportId: report.id, index: idx + 1 })}
+                                  style={{
+                                    padding: 0,
+                                    background: '#000',
+                                    border: '1px solid rgba(255,255,255,0.15)',
+                                    borderRadius: '6px',
+                                    overflow: 'hidden',
+                                    aspectRatio: '1',
+                                    cursor: 'pointer',
+                                    position: 'relative'
+                                  }}
+                                  title="Click to zoom inspect"
+                                >
+                                  <img
+                                    src={imgUrl}
+                                    alt={`Defect ${idx + 1}`}
+                                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                    onError={(e) => {
+                                      e.currentTarget.src = '/images/product-1.jpg';
+                                    }}
+                                  />
+                                  <div style={{
+                                    position: 'absolute',
+                                    bottom: 0,
+                                    left: 0,
+                                    right: 0,
+                                    background: 'rgba(0,0,0,0.7)',
+                                    color: '#fff',
+                                    fontSize: '0.6rem',
+                                    textAlign: 'center',
+                                    padding: '2px 0'
+                                  }}>
+                                    Photo #{idx + 1}
+                                  </div>
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Admin Decision & Status Bar */}
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '10px' }}>
+                        <span style={{ fontSize: '0.74rem', color: '#9ca3af', fontWeight: 600 }}>
+                          Admin Actions & Resolution:
+                        </span>
+                        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                          <button
+                            type="button"
+                            onClick={() => updateDefectReportStatus(report.id, 'Under QC Inspection', 'Reverse pickup scheduled for inspection')}
+                            style={{
+                              padding: '6px 12px',
+                              borderRadius: '6px',
+                              background: 'rgba(234, 179, 8, 0.1)',
+                              border: '1px solid rgba(234, 179, 8, 0.3)',
+                              color: 'var(--accent, #eab308)',
+                              fontSize: '0.74rem',
+                              fontWeight: 700,
+                              cursor: 'pointer'
+                            }}
+                          >
+                            <i className="fas fa-magnifying-glass" style={{ marginRight: '4px' }}></i> Move to QC
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => updateDefectReportStatus(report.id, 'Approved Replacement', 'Express replacement parcel dispatched')}
+                            style={{
+                              padding: '6px 12px',
+                              borderRadius: '6px',
+                              background: 'rgba(59, 130, 246, 0.15)',
+                              border: '1px solid rgba(59, 130, 246, 0.4)',
+                              color: '#60a5fa',
+                              fontSize: '0.74rem',
+                              fontWeight: 700,
+                              cursor: 'pointer'
+                            }}
+                          >
+                            <i className="fas fa-box-check" style={{ marginRight: '4px' }}></i> Approve Replacement
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => updateDefectReportStatus(report.id, 'Approved Refund', 'Full refund initiated to original payment source')}
+                            style={{
+                              padding: '6px 12px',
+                              borderRadius: '6px',
+                              background: 'rgba(168, 85, 247, 0.15)',
+                              border: '1px solid rgba(168, 85, 247, 0.4)',
+                              color: '#c084fc',
+                              fontSize: '0.74rem',
+                              fontWeight: 700,
+                              cursor: 'pointer'
+                            }}
+                          >
+                            <i className="fas fa-indian-rupee-sign" style={{ marginRight: '4px' }}></i> Approve Refund
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => updateDefectReportStatus(report.id, 'Resolved', 'Ticket resolved with customer satisfaction')}
+                            style={{
+                              padding: '6px 12px',
+                              borderRadius: '6px',
+                              background: 'rgba(34, 197, 94, 0.15)',
+                              border: '1px solid rgba(34, 197, 94, 0.4)',
+                              color: '#4ade80',
+                              fontSize: '0.74rem',
+                              fontWeight: 700,
+                              cursor: 'pointer'
+                            }}
+                          >
+                            <i className="fas fa-check-double" style={{ marginRight: '4px' }}></i> Mark Resolved
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => updateDefectReportStatus(report.id, 'Rejected', 'Defect not verified against quality criteria')}
+                            style={{
+                              padding: '6px 12px',
+                              borderRadius: '6px',
+                              background: 'rgba(239, 68, 68, 0.1)',
+                              border: '1px solid rgba(239, 68, 68, 0.25)',
+                              color: '#f87171',
+                              fontSize: '0.74rem',
+                              fontWeight: 700,
+                              cursor: 'pointer'
+                            }}
+                          >
+                            <i className="fas fa-ban" style={{ marginRight: '4px' }}></i> Reject Claim
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -2356,6 +2701,74 @@ export default function AdminPortal() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* ══════════════════════════════════════════════════════════════════
+          MODAL: HIGH-RES DEFECT PHOTO INSPECTOR
+      ══════════════════════════════════════════════════════════════════ */}
+      {selectedDefectPhoto && (
+        <div
+          onClick={() => setSelectedDefectPhoto(null)}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0,0,0,0.92)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 2000,
+            padding: '2rem',
+            backdropFilter: 'blur(10px)'
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              maxWidth: '850px',
+              width: '100%',
+              background: '#16161b',
+              border: '1px solid rgba(255,255,255,0.15)',
+              borderRadius: '16px',
+              overflow: 'hidden',
+              boxShadow: '0 25px 60px rgba(0,0,0,0.9)'
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem 1.25rem', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+              <div>
+                <span style={{ fontSize: '0.88rem', fontWeight: 800, color: '#fff' }}>
+                  Defect Photo Evidence Inspection
+                </span>
+                <span style={{ fontSize: '0.75rem', color: 'var(--accent, #eab308)', marginLeft: '10px' }}>
+                  Ticket #{selectedDefectPhoto.reportId}
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSelectedDefectPhoto(null)}
+                style={{ background: 'none', border: 'none', color: '#9ca3af', fontSize: '1.25rem', cursor: 'pointer' }}
+              >
+                &times;
+              </button>
+            </div>
+            <div style={{ padding: '1rem', background: '#0a0a0c', display: 'flex', alignItems: 'center', justifyContent: 'center', maxHeight: '70vh' }}>
+              <img
+                src={selectedDefectPhoto.url}
+                alt="Defect evidence zoom"
+                style={{ maxWidth: '100%', maxHeight: '68vh', objectFit: 'contain', borderRadius: '8px' }}
+              />
+            </div>
+            <div style={{ padding: '10px 1.25rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid rgba(255,255,255,0.08)', fontSize: '0.75rem', color: '#9ca3af' }}>
+              <span>Customer photo #{selectedDefectPhoto.index} attached during defect report</span>
+              <button
+                type="button"
+                onClick={() => setSelectedDefectPhoto(null)}
+                style={{ padding: '6px 14px', borderRadius: '6px', background: 'var(--accent, #eab308)', color: '#000', border: 'none', fontWeight: 800, cursor: 'pointer' }}
+              >
+                Close Preview
+              </button>
+            </div>
           </div>
         </div>
       )}
