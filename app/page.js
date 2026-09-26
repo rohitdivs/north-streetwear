@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import AnnouncementBar from '../components/layout/AnnouncementBar';
 import DepartmentBar from '../components/layout/DepartmentBar';
 import Navbar from '../components/layout/Navbar';
 import Footer from '../components/layout/Footer';
@@ -35,6 +36,9 @@ export default function HomePage() {
 
   return (
     <main>
+      {/* Top Announcement Bar (Ticker) */}
+      <AnnouncementBar />
+
       {/* Top Department Switcher */}
       <DepartmentBar />
 
