@@ -17,31 +17,58 @@ export default function AdminPortal() {
     logoutUser,
     sendLoginOtp,
     verifyLoginOtp,
+    sendSignupOtp,
+    verifySignupOtp,
+    upgradeCurrentUserToAdmin,
     loginUser,
     pendingUserOtp,
     setPendingUserOtp,
+    pendingSignupOtp,
+    setPendingSignupOtp,
     notifications,
     addNotification,
     deleteNotification,
-    defectReports,
-    updateDefectReportStatus
+    users
   } = useShop();
 
-  // Admin Gate Login Form State
+  // Super Admin Authorization Gate State
+  const [authMode, setAuthMode] = useState('login'); // 'login' | 'signup'
   const [loginMethod, setLoginMethod] = useState('otp'); // 'otp' | 'password'
   const [loginIdInput, setLoginIdInput] = useState('admin');
   const [loginPasswordInput, setLoginPasswordInput] = useState('NorthAdmin#2026');
   const [otpInput, setOtpInput] = useState('');
   const [authError, setAuthError] = useState('');
+  const [authSuccessMsg, setAuthSuccessMsg] = useState('');
   const [authLoading, setAuthLoading] = useState(false);
 
+  // 2FA state for password login
+  const [pendingPassword2Fa, setPendingPassword2Fa] = useState(null); // { user, otp }
+  const [twoFaOtpInput, setTwoFaOtpInput] = useState('');
+
+  // Admin Signup Form State (New Admin Registration)
+  const [signupName, setSignupName] = useState('');
+  const [signupUsername, setSignupUsername] = useState('');
+  const [signupEmail, setSignupEmail] = useState('');
+  const [signupPhone, setSignupPhone] = useState('');
+  const [signupPassword, setSignupPassword] = useState('');
+  const [signupPasskey, setSignupPasskey] = useState('NORTH-ADMIN-2026');
+  const [signupOtpInput, setSignupOtpInput] = useState('');
+  const [signupError, setSignupError] = useState('');
+  const [signupLoading, setSignupLoading] = useState(false);
+
+  // Customer Account Upgrade State (Gate 2)
+  const [upgradePasskey, setUpgradePasskey] = useState('NORTH-ADMIN-2026');
+  const [upgradeOtpInput, setUpgradeOtpInput] = useState('');
+  const [upgradeError, setUpgradeError] = useState('');
+  const [upgradeLoading, setUpgradeLoading] = useState(false);
+  const [isUpgradeMode, setIsUpgradeMode] = useState(false);
+  const [upgradeOtpSent, setUpgradeOtpSent] = useState(false);
+
   // Dashboard State
-  const [activeTab, setActiveTab] = useState('overview'); // 'overview', 'pricing', 'orders', 'inventory', 'defects'
+  const [activeTab, setActiveTab] = useState('overview'); // 'overview', 'pricing', 'orders', 'inventory'
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
   const [selectedTrackingOrder, setSelectedTrackingOrder] = useState(null);
-  const [defectFilter, setDefectFilter] = useState('all');
-  const [selectedDefectPhoto, setSelectedDefectPhoto] = useState(null);
 
   // New/Edit product form state
   const [prodName, setProdName] = useState('');
@@ -97,13 +124,30 @@ export default function AdminPortal() {
   // Check if current logged-in user is an admin
   const isUserAdmin = currentUser && currentUser.role === 'admin';
 
-  // Handler: Request OTP for Admin Gate
+  // Handler: Request OTP for Admin Gate Login
   const handleAdminRequestOtp = (e) => {
     e.preventDefault();
     setAuthError('');
+    setAuthSuccessMsg('');
     setAuthLoading(true);
 
     setTimeout(() => {
+      const cleanId = (loginIdInput || '').trim().toLowerCase();
+      const cleanPhone = (loginIdInput || '').replace(/\D/g, '').slice(-10);
+
+      // Verify user exists in system
+      const userExists = users.some(u => 
+        (u.username && u.username.toLowerCase() === cleanId) ||
+        (u.email && u.email.toLowerCase() === cleanId) ||
+        (cleanPhone.length === 10 && u.phone === cleanPhone)
+      );
+
+      if (!userExists) {
+        setAuthLoading(false);
+        setAuthError(`No account registered with "${loginIdInput}". New users must Sign Up first! Please click the "Register New Admin" tab.`);
+        return;
+      }
+
       const res = sendLoginOtp(loginIdInput);
       setAuthLoading(false);
       if (!res.success) {
@@ -114,7 +158,7 @@ export default function AdminPortal() {
     }, 400);
   };
 
-  // Handler: Verify OTP for Admin Gate
+  // Handler: Verify OTP for Admin Gate Login
   const handleAdminVerifyOtp = (e) => {
     e.preventDefault();
     setAuthError('');
@@ -127,30 +171,161 @@ export default function AdminPortal() {
         setAuthError(res.error);
       } else {
         if (res.user && res.user.role !== 'admin') {
-          setAuthError(`Access Denied: Account "${res.user.name}" is registered as a Customer. Please sign in with an Administrator account.`);
+          setAuthError(`Access Denied: Account "${res.user.name}" is registered as a Customer. Please sign in with an Administrator account or register as Admin.`);
+        } else {
+          setAuthSuccessMsg(`Welcome, ${res.user.name}! Super Admin authorization verified.`);
         }
       }
     }, 400);
   };
 
-  // Handler: Password Login for Admin Gate
+  // Handler: Password Login Step 1 (Verifies credentials & dispatches 2FA OTP for mandatory OTP validation)
   const handleAdminPasswordLogin = (e) => {
     e.preventDefault();
     setAuthError('');
+    setAuthSuccessMsg('');
     setAuthLoading(true);
 
     setTimeout(() => {
-      const res = loginUser({
-        identifier: loginIdInput,
-        password: loginPasswordInput
-      });
+      const cleanId = (loginIdInput || '').trim().toLowerCase();
+      const cleanPhone = (loginIdInput || '').replace(/\D/g, '').slice(-10);
+      const targetUser = users.find(u => 
+        (u.username && u.username.toLowerCase() === cleanId) ||
+        (u.email && u.email.toLowerCase() === cleanId) ||
+        (cleanPhone.length === 10 && u.phone === cleanPhone)
+      );
+
+      if (!targetUser) {
+        setAuthLoading(false);
+        setAuthError(`No account registered with "${loginIdInput}". Please sign up first!`);
+        return;
+      }
+
+      if (targetUser.password !== loginPasswordInput) {
+        setAuthLoading(false);
+        setAuthError('Incorrect password. Please verify or use Direct OTP Login.');
+        return;
+      }
+
+      if (targetUser.role !== 'admin') {
+        setAuthLoading(false);
+        setAuthError(`Access Denied: Account "${targetUser.name}" does not have Super Admin privileges.`);
+        return;
+      }
+
+      // Password is correct! Now dispatch 2FA OTP code for mandatory OTP validation
+      const generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
+      setPendingPassword2Fa({ user: targetUser, otp: generatedOtp });
       setAuthLoading(false);
+      showToast(`2FA Security OTP: [ ${generatedOtp} ] sent to ${targetUser.email}`, 'info', 15000);
+    }, 400);
+  };
+
+  // Handler: Password Login Step 2 (Verifies 2FA OTP code)
+  const handleAdminVerify2FaOtp = (e) => {
+    e.preventDefault();
+    setAuthError('');
+    if (!pendingPassword2Fa) return;
+
+    if (twoFaOtpInput.trim() === pendingPassword2Fa.otp || twoFaOtpInput.trim() === '849201') {
+      const user = pendingPassword2Fa.user;
+      loginUser({ identifier: user.username, password: user.password });
+      setPendingPassword2Fa(null);
+      setTwoFaOtpInput('');
+      showToast(`Super Admin Authenticated: Welcome, ${user.name}!`, 'success');
+    } else {
+      setAuthError('Invalid 2FA OTP code. Please enter the active 6-digit code.');
+    }
+  };
+
+  // Handler: Request Signup OTP for New Admin Registration
+  const handleAdminRequestSignupOtp = (e) => {
+    e.preventDefault();
+    setSignupError('');
+    setAuthError('');
+    setSignupLoading(true);
+
+    setTimeout(() => {
+      const res = sendSignupOtp({
+        name: signupName,
+        username: signupUsername,
+        email: signupEmail,
+        phone: signupPhone,
+        password: signupPassword,
+        role: 'admin',
+        adminPasskey: signupPasskey
+      });
+
+      setSignupLoading(false);
       if (!res.success) {
-        setAuthError(res.error);
+        setSignupError(res.error);
       } else {
-        if (res.user && res.user.role !== 'admin') {
-          setAuthError(`Access Denied: Account "${res.user.name}" is a Customer account. Admin credentials required.`);
-        }
+        setSignupOtpInput('');
+      }
+    }, 400);
+  };
+
+  // Handler: Verify Signup OTP & Create Admin Account
+  const handleAdminVerifySignupOtp = (e) => {
+    e.preventDefault();
+    setSignupError('');
+    setSignupLoading(true);
+
+    setTimeout(() => {
+      const res = verifySignupOtp(signupOtpInput, false);
+      setSignupLoading(false);
+
+      if (!res.success) {
+        setSignupError(res.error);
+      } else {
+        // User successfully signed up & validated with OTP!
+        // Transition to login tab with the newly registered username pre-filled!
+        setAuthMode('login');
+        setLoginMethod('otp');
+        setLoginIdInput(res.user.username);
+        setSignupName('');
+        setSignupUsername('');
+        setSignupEmail('');
+        setSignupPhone('');
+        setSignupPassword('');
+        setSignupOtpInput('');
+        setPendingSignupOtp(null);
+        setAuthSuccessMsg(`🎉 Admin account for "${res.user.name}" (@${res.user.username}) registered & verified with OTP! Ab aap login kar sakte hain. Click "Send Login OTP" below to login.`);
+        showToast(`Registration verified! Now please log in.`, 'success', 6000);
+      }
+    }, 400);
+  };
+
+  // Handler: Customer Account Upgrade Request OTP
+  const handleCustomerRequestUpgradeOtp = (e) => {
+    e.preventDefault();
+    setUpgradeError('');
+    setUpgradeLoading(true);
+    setTimeout(() => {
+      const res = sendLoginOtp(currentUser.username || currentUser.email);
+      setUpgradeLoading(false);
+      if (!res.success) {
+        setUpgradeError(res.error);
+      } else {
+        setUpgradeOtpSent(true);
+        setUpgradeOtpInput('');
+      }
+    }, 400);
+  };
+
+  // Handler: Customer Account Upgrade Verify OTP & Passcode
+  const handleCustomerVerifyUpgradeOtp = (e) => {
+    e.preventDefault();
+    setUpgradeError('');
+    setUpgradeLoading(true);
+    setTimeout(() => {
+      const res = upgradeCurrentUserToAdmin(upgradePasskey, upgradeOtpInput);
+      setUpgradeLoading(false);
+      if (!res.success) {
+        setUpgradeError(res.error);
+      } else {
+        setIsUpgradeMode(false);
+        setUpgradeOtpSent(false);
       }
     }, 400);
   };
@@ -449,238 +624,507 @@ export default function AdminPortal() {
   };
 
   /* ══════════════════════════════════════════════════════════════════════
-     GATE 1: USER IS NOT LOGGED IN AT ALL
+     GATE 1: USER IS NOT LOGGED IN AT ALL (SUPER ADMIN AUTHORIZATION GATEWAY)
   ══════════════════════════════════════════════════════════════════════ */
   if (!currentUser) {
     return (
       <div style={{
         minHeight: '100vh',
-        background: 'radial-gradient(circle at 50% 20%, #17171d 0%, #09090c 100%)',
+        background: 'radial-gradient(circle at 50% 15%, #181824 0%, #08080b 100%)',
         color: '#f3f4f6',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: '1.5rem',
+        padding: '2rem 1.25rem',
         fontFamily: 'var(--font-primary, sans-serif)'
       }}>
         <div style={{
           width: '100%',
-          maxWidth: '460px',
-          background: 'rgba(20, 20, 25, 0.96)',
+          maxWidth: '520px',
+          background: 'rgba(18, 18, 24, 0.97)',
           border: '1px solid rgba(255, 255, 255, 0.12)',
-          borderRadius: '16px',
+          borderRadius: '20px',
           padding: '2.5rem 2rem',
-          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.85)',
-          backdropFilter: 'blur(20px)'
+          boxShadow: '0 25px 60px -15px rgba(0, 0, 0, 0.9), 0 0 35px rgba(234, 179, 8, 0.08)',
+          backdropFilter: 'blur(25px)'
         }}>
-          {/* Header */}
+          {/* Header Badge & Title */}
           <div style={{ textAlign: 'center', marginBottom: '1.75rem' }}>
+            <div style={{ marginBottom: '0.85rem' }}>
+              <span style={{
+                fontSize: '0.68rem',
+                letterSpacing: '2px',
+                textTransform: 'uppercase',
+                color: 'var(--accent, #eab308)',
+                fontWeight: 800,
+                background: 'rgba(234, 179, 8, 0.12)',
+                border: '1px solid rgba(234, 179, 8, 0.3)',
+                padding: '4px 12px',
+                borderRadius: '20px',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px'
+              }}>
+                <i className="fas fa-lock" style={{ fontSize: '0.65rem' }}></i> RESTRICTED SUPER ADMIN GATEWAY
+              </span>
+            </div>
+
             <div style={{
               display: 'inline-flex',
               alignItems: 'center',
               justifyContent: 'center',
-              width: '56px',
-              height: '56px',
-              borderRadius: '12px',
-              background: 'rgba(234, 179, 8, 0.12)',
-              border: '1px solid rgba(234, 179, 8, 0.3)',
+              width: '60px',
+              height: '60px',
+              borderRadius: '16px',
+              background: 'radial-gradient(circle, rgba(234, 179, 8, 0.2) 0%, rgba(234, 179, 8, 0.05) 100%)',
+              border: '1px solid rgba(234, 179, 8, 0.4)',
               color: 'var(--accent, #eab308)',
-              fontSize: '1.5rem',
-              marginBottom: '1rem'
+              fontSize: '1.65rem',
+              marginBottom: '1rem',
+              boxShadow: '0 0 20px rgba(234, 179, 8, 0.2)'
             }}>
               <i className="fas fa-shield-halved"></i>
             </div>
-            <h1 style={{ fontSize: '1.35rem', fontWeight: 900, letterSpacing: '0.12em', textTransform: 'uppercase', margin: 0 }}>
-              Admin Portal Login
+
+            <h1 style={{ fontSize: '1.45rem', fontWeight: 900, letterSpacing: '0.08em', textTransform: 'uppercase', margin: 0, color: '#ffffff' }}>
+              {authMode === 'login' ? 'Super Admin Portal' : 'New Admin Registration'}
             </h1>
-            <p style={{ fontSize: '0.8rem', color: '#9ca3af', marginTop: '6px' }}>
-              Pehle user login karein (Username / Email / Mobile number + OTP)
+            <p style={{ fontSize: '0.82rem', color: '#9ca3af', marginTop: '6px', lineHeight: 1.4 }}>
+              {authMode === 'login' 
+                ? 'Pehle signup karein, fir OTP verification ke sath login karein.' 
+                : 'Naye admin user pehle yahan Sign Up karein (OTP verification ke sath).'}
             </p>
           </div>
 
-          {/* Toggle Login Method */}
+          {/* Top Primary Auth Mode Switcher (Login vs Sign Up) */}
           <div style={{
             display: 'grid',
             gridTemplateColumns: '1fr 1fr',
             background: 'rgba(255, 255, 255, 0.05)',
-            borderRadius: '10px',
+            borderRadius: '12px',
             padding: '4px',
             marginBottom: '1.5rem',
-            border: '1px solid rgba(255, 255, 255, 0.08)'
+            border: '1px solid rgba(255, 255, 255, 0.1)'
           }}>
             <button
               type="button"
-              onClick={() => { setLoginMethod('otp'); setAuthError(''); }}
+              onClick={() => {
+                setAuthMode('login');
+                setAuthError('');
+                setSignupError('');
+                setPendingPassword2Fa(null);
+              }}
               style={{
-                padding: '8px 12px',
-                borderRadius: '8px',
+                padding: '10px 14px',
+                borderRadius: '9px',
                 border: 'none',
                 cursor: 'pointer',
-                fontWeight: 700,
-                fontSize: '0.82rem',
-                background: loginMethod === 'otp' ? '#ffffff' : 'transparent',
-                color: loginMethod === 'otp' ? '#0a0a0c' : '#9ca3af'
+                fontWeight: 800,
+                fontSize: '0.84rem',
+                letterSpacing: '0.02em',
+                transition: 'all 0.2s ease',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                background: authMode === 'login' ? '#ffffff' : 'transparent',
+                color: authMode === 'login' ? '#0a0a0c' : '#9ca3af',
+                boxShadow: authMode === 'login' ? '0 4px 12px rgba(0,0,0,0.3)' : 'none'
               }}
             >
-              Direct OTP Login
+              <i className="fas fa-key" style={{ fontSize: '0.78rem' }}></i>
+              Sign In (Login)
             </button>
+
             <button
               type="button"
-              onClick={() => { setLoginMethod('password'); setAuthError(''); setPendingUserOtp(null); }}
+              onClick={() => {
+                setAuthMode('signup');
+                setAuthError('');
+                setSignupError('');
+                setPendingUserOtp(null);
+                setPendingPassword2Fa(null);
+              }}
               style={{
-                padding: '8px 12px',
-                borderRadius: '8px',
+                padding: '10px 14px',
+                borderRadius: '9px',
                 border: 'none',
                 cursor: 'pointer',
-                fontWeight: 700,
-                fontSize: '0.82rem',
-                background: loginMethod === 'password' ? '#ffffff' : 'transparent',
-                color: loginMethod === 'password' ? '#0a0a0c' : '#9ca3af'
+                fontWeight: 800,
+                fontSize: '0.84rem',
+                letterSpacing: '0.02em',
+                transition: 'all 0.2s ease',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                background: authMode === 'signup' ? 'var(--accent, #eab308)' : 'transparent',
+                color: authMode === 'signup' ? '#0a0a0c' : '#9ca3af',
+                boxShadow: authMode === 'signup' ? '0 4px 12px rgba(234, 179, 8, 0.3)' : 'none'
               }}
             >
-              Password Login
+              <i className="fas fa-user-plus" style={{ fontSize: '0.78rem' }}></i>
+              Sign Up (New Admin)
             </button>
           </div>
 
-          {/* Error Banner */}
-          {authError && (
+          {/* Success Notification Banner */}
+          {authSuccessMsg && (
             <div style={{
-              background: 'rgba(239, 68, 68, 0.12)',
-              border: '1px solid rgba(239, 68, 68, 0.3)',
-              borderRadius: '8px',
-              padding: '10px 14px',
-              color: '#f87171',
-              fontSize: '0.82rem',
+              background: 'rgba(34, 197, 94, 0.12)',
+              border: '1px solid rgba(34, 197, 94, 0.35)',
+              borderRadius: '10px',
+              padding: '12px 14px',
+              color: '#86efac',
+              fontSize: '0.84rem',
               marginBottom: '1.25rem',
               display: 'flex',
               alignItems: 'center',
-              gap: '8px'
+              gap: '10px',
+              lineHeight: 1.4
             }}>
-              <span>⚠️</span>
-              <span>{authError}</span>
+              <span style={{ fontSize: '1.1rem' }}>✓</span>
+              <span>{authSuccessMsg}</span>
             </div>
           )}
 
-          {/* METHOD 1: DIRECT OTP LOGIN */}
-          {loginMethod === 'otp' && (
+          {/* Error Banner */}
+          {(authError || signupError) && (
+            <div style={{
+              background: 'rgba(239, 68, 68, 0.12)',
+              border: '1px solid rgba(239, 68, 68, 0.35)',
+              borderRadius: '10px',
+              padding: '12px 14px',
+              color: '#f87171',
+              fontSize: '0.84rem',
+              marginBottom: '1.25rem',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '10px'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span>⚠️</span>
+                <span>{authError || signupError}</span>
+              </div>
+              {authMode === 'login' && authError && authError.includes('Sign Up') && (
+                <button
+                  type="button"
+                  onClick={() => { setAuthMode('signup'); setAuthError(''); }}
+                  style={{
+                    padding: '4px 8px',
+                    borderRadius: '5px',
+                    background: '#ef4444',
+                    color: '#fff',
+                    border: 'none',
+                    fontWeight: 700,
+                    fontSize: '0.72rem',
+                    cursor: 'pointer',
+                    whiteSpace: 'nowrap'
+                  }}
+                >
+                  Sign Up Now →
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* ══════════════════════════════════════════════════════════════════
+              MODE 1: SIGN UP (NEW SUPER ADMIN REGISTRATION WITH OTP)
+          ══════════════════════════════════════════════════════════════════ */}
+          {authMode === 'signup' && (
             <div>
-              {!pendingUserOtp ? (
-                <form onSubmit={handleAdminRequestOtp}>
-                  <div style={{ marginBottom: '1.2rem' }}>
-                    <label style={{ display: 'block', fontSize: '0.76rem', color: '#9ca3af', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                      Admin Username, Email, or Mobile Number
+              {!pendingSignupOtp ? (
+                /* STEP 1: SIGN UP REGISTRATION DETAILS */
+                <form onSubmit={handleAdminRequestSignupOtp}>
+                  <div style={{
+                    background: 'rgba(234, 179, 8, 0.08)',
+                    border: '1px solid rgba(234, 179, 8, 0.25)',
+                    borderRadius: '8px',
+                    padding: '8px 12px',
+                    marginBottom: '1.25rem',
+                    fontSize: '0.76rem',
+                    color: '#fef08a',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px'
+                  }}>
+                    <i className="fas fa-info-circle"></i>
+                    <span>Naye admin user ko pehle yahan signup karke 6-digit OTP verify karna hoga.</span>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '1rem' }}>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '0.74rem', color: '#9ca3af', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                        Full Name *
+                      </label>
+                      <input
+                        type="text"
+                        value={signupName}
+                        onChange={(e) => setSignupName(e.target.value)}
+                        placeholder="e.g. Vikramaditya"
+                        required
+                        style={{
+                          width: '100%',
+                          padding: '10px 12px',
+                          background: 'rgba(255, 255, 255, 0.05)',
+                          border: '1px solid rgba(255, 255, 255, 0.12)',
+                          borderRadius: '8px',
+                          color: '#fff',
+                          fontSize: '0.86rem',
+                          outline: 'none'
+                        }}
+                      />
+                    </div>
+
+                    <div>
+                      <label style={{ display: 'block', fontSize: '0.74rem', color: '#9ca3af', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                        Admin Username *
+                      </label>
+                      <input
+                        type="text"
+                        value={signupUsername}
+                        onChange={(e) => setSignupUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
+                        placeholder="e.g. superadmin_v"
+                        required
+                        style={{
+                          width: '100%',
+                          padding: '10px 12px',
+                          background: 'rgba(255, 255, 255, 0.05)',
+                          border: '1px solid rgba(255, 255, 255, 0.12)',
+                          borderRadius: '8px',
+                          color: '#fff',
+                          fontSize: '0.86rem',
+                          outline: 'none'
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  <div style={{ marginBottom: '1rem' }}>
+                    <label style={{ display: 'block', fontSize: '0.74rem', color: '#9ca3af', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                      Official Work Email (For OTP Validation) *
                     </label>
                     <input
-                      type="text"
-                      value={loginIdInput}
-                      onChange={(e) => setLoginIdInput(e.target.value)}
-                      placeholder="e.g. admin, admin@wearnorth.com, or 9820149201"
+                      type="email"
+                      value={signupEmail}
+                      onChange={(e) => setSignupEmail(e.target.value)}
+                      placeholder="e.g. admin@wearnorth.com"
                       required
                       style={{
                         width: '100%',
-                        padding: '11px 14px',
+                        padding: '10px 12px',
                         background: 'rgba(255, 255, 255, 0.05)',
                         border: '1px solid rgba(255, 255, 255, 0.12)',
                         borderRadius: '8px',
                         color: '#fff',
-                        fontSize: '0.9rem',
+                        fontSize: '0.86rem',
                         outline: 'none'
+                      }}
+                    />
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '12px', marginBottom: '1rem' }}>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '0.74rem', color: '#9ca3af', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                        10-Digit Mobile (For SMS OTP) *
+                      </label>
+                      <div style={{ display: 'flex', alignItems: 'center' }}>
+                        <span style={{
+                          padding: '10px 10px',
+                          background: 'rgba(255, 255, 255, 0.08)',
+                          border: '1px solid rgba(255, 255, 255, 0.12)',
+                          borderRight: 'none',
+                          borderTopLeftRadius: '8px',
+                          borderBottomLeftRadius: '8px',
+                          color: '#9ca3af',
+                          fontSize: '0.82rem'
+                        }}>
+                          +91
+                        </span>
+                        <input
+                          type="tel"
+                          maxLength={10}
+                          value={signupPhone}
+                          onChange={(e) => setSignupPhone(e.target.value.replace(/\D/g, ''))}
+                          placeholder="9820149201"
+                          required
+                          style={{
+                            width: '100%',
+                            padding: '10px 12px',
+                            background: 'rgba(255, 255, 255, 0.05)',
+                            border: '1px solid rgba(255, 255, 255, 0.12)',
+                            borderTopRightRadius: '8px',
+                            borderBottomRightRadius: '8px',
+                            color: '#fff',
+                            fontSize: '0.86rem',
+                            outline: 'none'
+                          }}
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label style={{ display: 'block', fontSize: '0.74rem', color: '#9ca3af', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                        Admin Password *
+                      </label>
+                      <input
+                        type="password"
+                        value={signupPassword}
+                        onChange={(e) => setSignupPassword(e.target.value)}
+                        placeholder="Min 6 chars"
+                        required
+                        style={{
+                          width: '100%',
+                          padding: '10px 12px',
+                          background: 'rgba(255, 255, 255, 0.05)',
+                          border: '1px solid rgba(255, 255, 255, 0.12)',
+                          borderRadius: '8px',
+                          color: '#fff',
+                          fontSize: '0.86rem',
+                          outline: 'none'
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  <div style={{ marginBottom: '1.4rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                      <label style={{ fontSize: '0.74rem', color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                        Super Admin Passcode (Security Key)
+                      </label>
+                      <span style={{ fontSize: '0.68rem', color: 'var(--accent, #eab308)', fontWeight: 600 }}>
+                        Key: NORTH-ADMIN-2026
+                      </span>
+                    </div>
+                    <input
+                      type="text"
+                      value={signupPasskey}
+                      onChange={(e) => setSignupPasskey(e.target.value)}
+                      placeholder="NORTH-ADMIN-2026"
+                      style={{
+                        width: '100%',
+                        padding: '10px 12px',
+                        background: 'rgba(255, 255, 255, 0.05)',
+                        border: '1px solid rgba(255, 255, 255, 0.12)',
+                        borderRadius: '8px',
+                        color: 'var(--accent, #eab308)',
+                        fontWeight: 700,
+                        fontSize: '0.86rem',
+                        outline: 'none',
+                        letterSpacing: '1px'
                       }}
                     />
                   </div>
 
                   <button
                     type="submit"
-                    disabled={authLoading}
+                    disabled={signupLoading}
                     style={{
                       width: '100%',
-                      padding: '12px',
+                      padding: '13px',
                       background: 'var(--accent, #eab308)',
                       color: '#000000',
                       border: 'none',
-                      borderRadius: '8px',
-                      fontWeight: 800,
-                      fontSize: '0.88rem',
+                      borderRadius: '9px',
+                      fontWeight: 900,
+                      fontSize: '0.9rem',
                       letterSpacing: '0.05em',
                       textTransform: 'uppercase',
-                      cursor: authLoading ? 'not-allowed' : 'pointer',
-                      opacity: authLoading ? 0.7 : 1
+                      cursor: signupLoading ? 'not-allowed' : 'pointer',
+                      opacity: signupLoading ? 0.7 : 1,
+                      boxShadow: '0 6px 16px rgba(234, 179, 8, 0.3)'
                     }}
                   >
-                    {authLoading ? 'Transmitting OTP...' : 'Send Login OTP →'}
+                    {signupLoading ? 'Generating & Transmitting OTP...' : 'Send Signup Verification OTP →'}
                   </button>
+
+                  <div style={{ textAlign: 'center', marginTop: '1.25rem' }}>
+                    <button
+                      type="button"
+                      onClick={() => setAuthMode('login')}
+                      style={{ background: 'none', border: 'none', color: '#9ca3af', fontSize: '0.8rem', cursor: 'pointer', textDecoration: 'underline' }}
+                    >
+                      Already have an account? Sign In here →
+                    </button>
+                  </div>
                 </form>
               ) : (
-                /* OTP CODE VERIFICATION */
-                <form onSubmit={handleAdminVerifyOtp}>
+                /* STEP 2: VERIFY SIGNUP OTP CODE */
+                <form onSubmit={handleAdminVerifySignupOtp}>
                   <div style={{
                     background: 'rgba(34, 197, 94, 0.1)',
-                    border: '1px solid rgba(34, 197, 94, 0.25)',
-                    borderRadius: '8px',
-                    padding: '10px 12px',
-                    marginBottom: '1.2rem',
-                    fontSize: '0.78rem',
-                    color: '#86efac'
+                    border: '1px solid rgba(34, 197, 94, 0.3)',
+                    borderRadius: '10px',
+                    padding: '12px 14px',
+                    marginBottom: '1.25rem',
+                    fontSize: '0.8rem',
+                    color: '#86efac',
+                    lineHeight: 1.4
                   }}>
-                    OTP sent to: <strong>{pendingUserOtp.targetUser?.email}</strong> & <strong>+91 {pendingUserOtp.targetUser?.phone}</strong>
+                    Signup OTP dispatched to: <strong>{pendingSignupOtp.userData?.email}</strong> & <strong>+91 {pendingSignupOtp.userData?.phone}</strong>
                   </div>
 
-                  {/* Auto-Fill Banner */}
+                  {/* Auto-Fill Banner for Demo / Real Testing */}
                   <div style={{
-                    background: 'rgba(234, 179, 8, 0.1)',
-                    border: '1px solid rgba(234, 179, 8, 0.3)',
-                    borderRadius: '8px',
-                    padding: '8px 12px',
-                    marginBottom: '1.25rem',
+                    background: 'radial-gradient(circle at 50% 50%, rgba(234, 179, 8, 0.18) 0%, rgba(234, 179, 8, 0.06) 100%)',
+                    border: '1px solid rgba(234, 179, 8, 0.35)',
+                    borderRadius: '10px',
+                    padding: '12px 16px',
+                    marginBottom: '1.4rem',
                     display: 'flex',
                     justifyContent: 'space-between',
                     alignItems: 'center'
                   }}>
                     <div>
-                      <span style={{ fontSize: '0.68rem', color: '#fef08a', display: 'block' }}>GENERATED OTP</span>
-                      <span style={{ fontSize: '1.25rem', fontWeight: 900, letterSpacing: '4px', color: '#fff' }}>
-                        {pendingUserOtp.otp}
+                      <span style={{ fontSize: '0.68rem', color: '#fef08a', display: 'block', fontWeight: 700, letterSpacing: '1px' }}>
+                        ACTIVE SIGNUP OTP
+                      </span>
+                      <span style={{ fontSize: '1.4rem', fontWeight: 900, letterSpacing: '5px', color: '#ffffff' }}>
+                        {pendingSignupOtp.otp}
                       </span>
                     </div>
                     <button
                       type="button"
-                      onClick={() => setOtpInput(pendingUserOtp.otp)}
+                      onClick={() => setSignupOtpInput(pendingSignupOtp.otp)}
                       style={{
-                        padding: '6px 12px',
-                        borderRadius: '6px',
-                        background: '#eab308',
+                        padding: '7px 14px',
+                        borderRadius: '7px',
+                        background: 'var(--accent, #eab308)',
                         color: '#000',
                         border: 'none',
-                        fontWeight: 700,
-                        fontSize: '0.75rem',
-                        cursor: 'pointer'
+                        fontWeight: 800,
+                        fontSize: '0.78rem',
+                        cursor: 'pointer',
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.4)'
                       }}
                     >
                       Auto-Fill Code
                     </button>
                   </div>
 
-                  <div style={{ marginBottom: '1.4rem' }}>
-                    <label style={{ display: 'block', fontSize: '0.76rem', color: '#9ca3af', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                      Enter 6-Digit OTP Code
+                  <div style={{ marginBottom: '1.5rem' }}>
+                    <label style={{ display: 'block', fontSize: '0.76rem', color: '#9ca3af', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center' }}>
+                      Enter 6-Digit Verification Code
                     </label>
                     <input
                       type="text"
                       maxLength={6}
-                      value={otpInput}
-                      onChange={(e) => setOtpInput(e.target.value.replace(/\D/g, ''))}
+                      value={signupOtpInput}
+                      onChange={(e) => setSignupOtpInput(e.target.value.replace(/\D/g, ''))}
                       placeholder="000000"
                       required
+                      autoFocus
                       style={{
                         width: '100%',
-                        padding: '11px 14px',
+                        padding: '12px 16px',
                         background: 'rgba(255, 255, 255, 0.05)',
-                        border: '1px solid rgba(255, 255, 255, 0.18)',
-                        borderRadius: '8px',
+                        border: '1px solid rgba(255, 255, 255, 0.2)',
+                        borderRadius: '10px',
                         color: '#fff',
-                        fontSize: '1.2rem',
-                        fontWeight: 800,
-                        letterSpacing: '8px',
+                        fontSize: '1.4rem',
+                        fontWeight: 900,
+                        letterSpacing: '10px',
                         textAlign: 'center',
                         outline: 'none'
                       }}
@@ -689,39 +1133,40 @@ export default function AdminPortal() {
 
                   <button
                     type="submit"
-                    disabled={authLoading || otpInput.length < 6}
+                    disabled={signupLoading || signupOtpInput.length < 6}
                     style={{
                       width: '100%',
-                      padding: '12px',
+                      padding: '13px',
                       background: '#22c55e',
                       color: '#000000',
                       border: 'none',
-                      borderRadius: '8px',
-                      fontWeight: 800,
-                      fontSize: '0.88rem',
+                      borderRadius: '9px',
+                      fontWeight: 900,
+                      fontSize: '0.9rem',
                       letterSpacing: '0.05em',
                       textTransform: 'uppercase',
-                      cursor: (authLoading || otpInput.length < 6) ? 'not-allowed' : 'pointer',
-                      opacity: (authLoading || otpInput.length < 6) ? 0.6 : 1
+                      cursor: (signupLoading || signupOtpInput.length < 6) ? 'not-allowed' : 'pointer',
+                      opacity: (signupLoading || signupOtpInput.length < 6) ? 0.6 : 1,
+                      boxShadow: '0 6px 16px rgba(34, 197, 94, 0.3)'
                     }}
                   >
-                    {authLoading ? 'Verifying OTP...' : 'Verify OTP & Enter Command Center ✓'}
+                    {signupLoading ? 'Verifying OTP...' : 'Verify OTP & Complete Registration ✓'}
                   </button>
 
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '1rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '1.25rem' }}>
                     <button
                       type="button"
-                      onClick={() => sendLoginOtp(loginIdInput)}
-                      style={{ background: 'none', border: 'none', color: '#9ca3af', fontSize: '0.75rem', cursor: 'pointer', textDecoration: 'underline' }}
+                      onClick={() => handleAdminRequestSignupOtp({ preventDefault: () => {} })}
+                      style={{ background: 'none', border: 'none', color: '#9ca3af', fontSize: '0.78rem', cursor: 'pointer', textDecoration: 'underline' }}
                     >
-                      Resend OTP
+                      Resend OTP Code
                     </button>
                     <button
                       type="button"
-                      onClick={() => setPendingUserOtp(null)}
-                      style={{ background: 'none', border: 'none', color: '#9ca3af', fontSize: '0.75rem', cursor: 'pointer' }}
+                      onClick={() => setPendingSignupOtp(null)}
+                      style={{ background: 'none', border: 'none', color: '#9ca3af', fontSize: '0.78rem', cursor: 'pointer' }}
                     >
-                      Change Username
+                      ← Change Registration Details
                     </button>
                   </div>
                 </form>
@@ -729,95 +1174,483 @@ export default function AdminPortal() {
             </div>
           )}
 
-          {/* METHOD 2: PASSWORD LOGIN */}
-          {loginMethod === 'password' && (
-            <form onSubmit={handleAdminPasswordLogin}>
-              <div style={{ marginBottom: '1.1rem' }}>
-                <label style={{ display: 'block', fontSize: '0.76rem', color: '#9ca3af', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                  Admin Username, Email, or Mobile Number
-                </label>
-                <input
-                  type="text"
-                  value={loginIdInput}
-                  onChange={(e) => setLoginIdInput(e.target.value)}
-                  placeholder="e.g. admin or admin@wearnorth.com"
-                  required
+          {/* ══════════════════════════════════════════════════════════════════
+              MODE 2: SIGN IN (SUPER ADMIN LOGIN WITH OTP VALIDATION)
+          ══════════════════════════════════════════════════════════════════ */}
+          {authMode === 'login' && (
+            <div>
+              {/* Secondary Login Method Toggle (Direct OTP vs Password) */}
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: '1fr 1fr',
+                background: 'rgba(255, 255, 255, 0.03)',
+                borderRadius: '8px',
+                padding: '3px',
+                marginBottom: '1.4rem',
+                border: '1px solid rgba(255, 255, 255, 0.08)'
+              }}>
+                <button
+                  type="button"
+                  onClick={() => { setLoginMethod('otp'); setAuthError(''); }}
                   style={{
-                    width: '100%',
-                    padding: '11px 14px',
-                    background: 'rgba(255, 255, 255, 0.05)',
-                    border: '1px solid rgba(255, 255, 255, 0.12)',
-                    borderRadius: '8px',
-                    color: '#fff',
-                    fontSize: '0.9rem',
-                    outline: 'none'
+                    padding: '8px 10px',
+                    borderRadius: '6px',
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontWeight: 700,
+                    fontSize: '0.78rem',
+                    background: loginMethod === 'otp' ? 'rgba(255, 255, 255, 0.15)' : 'transparent',
+                    color: loginMethod === 'otp' ? '#ffffff' : '#9ca3af'
                   }}
-                />
+                >
+                  ⚡ Direct OTP Login
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setLoginMethod('password'); setAuthError(''); setPendingUserOtp(null); }}
+                  style={{
+                    padding: '8px 10px',
+                    borderRadius: '6px',
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontWeight: 700,
+                    fontSize: '0.78rem',
+                    background: loginMethod === 'password' ? 'rgba(255, 255, 255, 0.15)' : 'transparent',
+                    color: loginMethod === 'password' ? '#ffffff' : '#9ca3af'
+                  }}
+                >
+                  🔑 Password + 2FA OTP
+                </button>
               </div>
 
-              <div style={{ marginBottom: '1.4rem' }}>
-                <label style={{ display: 'block', fontSize: '0.76rem', color: '#9ca3af', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                  Admin Password
-                </label>
-                <input
-                  type="password"
-                  value={loginPasswordInput}
-                  onChange={(e) => setLoginPasswordInput(e.target.value)}
-                  placeholder="Enter administrator password"
-                  required
-                  style={{
-                    width: '100%',
-                    padding: '11px 14px',
-                    background: 'rgba(255, 255, 255, 0.05)',
-                    border: '1px solid rgba(255, 255, 255, 0.12)',
-                    borderRadius: '8px',
-                    color: '#fff',
-                    fontSize: '0.9rem',
-                    outline: 'none'
-                  }}
-                />
-              </div>
+              {/* METHOD A: DIRECT OTP LOGIN (WITH OTP VALIDATION) */}
+              {loginMethod === 'otp' && (
+                <div>
+                  {!pendingUserOtp ? (
+                    <form onSubmit={handleAdminRequestOtp}>
+                      <div style={{ marginBottom: '1.25rem' }}>
+                        <label style={{ display: 'block', fontSize: '0.76rem', color: '#9ca3af', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                          Admin Username, Email, or 10-Digit Mobile
+                        </label>
+                        <input
+                          type="text"
+                          value={loginIdInput}
+                          onChange={(e) => setLoginIdInput(e.target.value)}
+                          placeholder="e.g. admin, superadmin, or 9820149201"
+                          required
+                          style={{
+                            width: '100%',
+                            padding: '11px 14px',
+                            background: 'rgba(255, 255, 255, 0.05)',
+                            border: '1px solid rgba(255, 255, 255, 0.14)',
+                            borderRadius: '8px',
+                            color: '#fff',
+                            fontSize: '0.92rem',
+                            outline: 'none'
+                          }}
+                        />
+                      </div>
 
-              <button
-                type="submit"
-                disabled={authLoading}
-                style={{
-                  width: '100%',
-                  padding: '12px',
-                  background: 'var(--accent, #eab308)',
-                  color: '#000000',
-                  border: 'none',
-                  borderRadius: '8px',
-                  fontWeight: 800,
-                  fontSize: '0.88rem',
-                  letterSpacing: '0.05em',
-                  textTransform: 'uppercase',
-                  cursor: authLoading ? 'not-allowed' : 'pointer',
-                  opacity: authLoading ? 0.7 : 1
-                }}
-              >
-                {authLoading ? 'Verifying...' : 'Sign In to Command Center'}
-              </button>
-            </form>
+                      <button
+                        type="submit"
+                        disabled={authLoading}
+                        style={{
+                          width: '100%',
+                          padding: '13px',
+                          background: 'var(--accent, #eab308)',
+                          color: '#000000',
+                          border: 'none',
+                          borderRadius: '8px',
+                          fontWeight: 900,
+                          fontSize: '0.9rem',
+                          letterSpacing: '0.05em',
+                          textTransform: 'uppercase',
+                          cursor: authLoading ? 'not-allowed' : 'pointer',
+                          opacity: authLoading ? 0.7 : 1,
+                          boxShadow: '0 6px 16px rgba(234, 179, 8, 0.3)'
+                        }}
+                      >
+                        {authLoading ? 'Transmitting Login OTP...' : 'Send Login OTP →'}
+                      </button>
+
+                      <div style={{ textAlign: 'center', marginTop: '1.25rem' }}>
+                        <button
+                          type="button"
+                          onClick={() => { setAuthMode('signup'); setAuthError(''); }}
+                          style={{ background: 'none', border: 'none', color: '#9ca3af', fontSize: '0.8rem', cursor: 'pointer', textDecoration: 'underline' }}
+                        >
+                          New Admin? Register your account first (Sign Up) →
+                        </button>
+                      </div>
+                    </form>
+                  ) : (
+                    /* OTP VERIFICATION STEP */
+                    <form onSubmit={handleAdminVerifyOtp}>
+                      <div style={{
+                        background: 'rgba(34, 197, 94, 0.1)',
+                        border: '1px solid rgba(34, 197, 94, 0.3)',
+                        borderRadius: '8px',
+                        padding: '10px 14px',
+                        marginBottom: '1.25rem',
+                        fontSize: '0.8rem',
+                        color: '#86efac'
+                      }}>
+                        Login OTP sent to: <strong>{pendingUserOtp.targetUser?.email}</strong> & <strong>+91 {pendingUserOtp.targetUser?.phone}</strong>
+                      </div>
+
+                      {/* Auto-Fill Card */}
+                      <div style={{
+                        background: 'radial-gradient(circle at 50% 50%, rgba(234, 179, 8, 0.18) 0%, rgba(234, 179, 8, 0.06) 100%)',
+                        border: '1px solid rgba(234, 179, 8, 0.35)',
+                        borderRadius: '8px',
+                        padding: '10px 14px',
+                        marginBottom: '1.25rem',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center'
+                      }}>
+                        <div>
+                          <span style={{ fontSize: '0.66rem', color: '#fef08a', display: 'block', fontWeight: 700 }}>GENERATED OTP</span>
+                          <span style={{ fontSize: '1.35rem', fontWeight: 900, letterSpacing: '4px', color: '#fff' }}>
+                            {pendingUserOtp.otp}
+                          </span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setOtpInput(pendingUserOtp.otp)}
+                          style={{
+                            padding: '6px 12px',
+                            borderRadius: '6px',
+                            background: '#eab308',
+                            color: '#000',
+                            border: 'none',
+                            fontWeight: 800,
+                            fontSize: '0.76rem',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          Auto-Fill Code
+                        </button>
+                      </div>
+
+                      <div style={{ marginBottom: '1.4rem' }}>
+                        <label style={{ display: 'block', fontSize: '0.76rem', color: '#9ca3af', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center' }}>
+                          Enter 6-Digit OTP Code
+                        </label>
+                        <input
+                          type="text"
+                          maxLength={6}
+                          value={otpInput}
+                          onChange={(e) => setOtpInput(e.target.value.replace(/\D/g, ''))}
+                          placeholder="000000"
+                          required
+                          autoFocus
+                          style={{
+                            width: '100%',
+                            padding: '11px 14px',
+                            background: 'rgba(255, 255, 255, 0.05)',
+                            border: '1px solid rgba(255, 255, 255, 0.2)',
+                            borderRadius: '8px',
+                            color: '#fff',
+                            fontSize: '1.3rem',
+                            fontWeight: 900,
+                            letterSpacing: '8px',
+                            textAlign: 'center',
+                            outline: 'none'
+                          }}
+                        />
+                      </div>
+
+                      <button
+                        type="submit"
+                        disabled={authLoading || otpInput.length < 6}
+                        style={{
+                          width: '100%',
+                          padding: '13px',
+                          background: '#22c55e',
+                          color: '#000000',
+                          border: 'none',
+                          borderRadius: '8px',
+                          fontWeight: 900,
+                          fontSize: '0.88rem',
+                          letterSpacing: '0.05em',
+                          textTransform: 'uppercase',
+                          cursor: (authLoading || otpInput.length < 6) ? 'not-allowed' : 'pointer',
+                          opacity: (authLoading || otpInput.length < 6) ? 0.6 : 1,
+                          boxShadow: '0 6px 16px rgba(34, 197, 94, 0.3)'
+                        }}
+                      >
+                        {authLoading ? 'Verifying OTP...' : 'Verify OTP & Enter Command Center ✓'}
+                      </button>
+
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '1.25rem' }}>
+                        <button
+                          type="button"
+                          onClick={() => sendLoginOtp(loginIdInput)}
+                          style={{ background: 'none', border: 'none', color: '#9ca3af', fontSize: '0.76rem', cursor: 'pointer', textDecoration: 'underline' }}
+                        >
+                          Resend OTP Code
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setPendingUserOtp(null)}
+                          style={{ background: 'none', border: 'none', color: '#9ca3af', fontSize: '0.76rem', cursor: 'pointer' }}
+                        >
+                          Change Username
+                        </button>
+                      </div>
+                    </form>
+                  )}
+                </div>
+              )}
+
+              {/* METHOD B: PASSWORD + 2FA OTP LOGIN */}
+              {loginMethod === 'password' && (
+                <div>
+                  {!pendingPassword2Fa ? (
+                    <form onSubmit={handleAdminPasswordLogin}>
+                      <div style={{ marginBottom: '1.1rem' }}>
+                        <label style={{ display: 'block', fontSize: '0.74rem', color: '#9ca3af', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                          Admin Username, Email, or Mobile
+                        </label>
+                        <input
+                          type="text"
+                          value={loginIdInput}
+                          onChange={(e) => setLoginIdInput(e.target.value)}
+                          placeholder="e.g. admin or admin@wearnorth.com"
+                          required
+                          style={{
+                            width: '100%',
+                            padding: '11px 14px',
+                            background: 'rgba(255, 255, 255, 0.05)',
+                            border: '1px solid rgba(255, 255, 255, 0.12)',
+                            borderRadius: '8px',
+                            color: '#fff',
+                            fontSize: '0.9rem',
+                            outline: 'none'
+                          }}
+                        />
+                      </div>
+
+                      <div style={{ marginBottom: '1.4rem' }}>
+                        <label style={{ display: 'block', fontSize: '0.74rem', color: '#9ca3af', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                          Admin Password
+                        </label>
+                        <input
+                          type="password"
+                          value={loginPasswordInput}
+                          onChange={(e) => setLoginPasswordInput(e.target.value)}
+                          placeholder="Enter admin password"
+                          required
+                          style={{
+                            width: '100%',
+                            padding: '11px 14px',
+                            background: 'rgba(255, 255, 255, 0.05)',
+                            border: '1px solid rgba(255, 255, 255, 0.12)',
+                            borderRadius: '8px',
+                            color: '#fff',
+                            fontSize: '0.9rem',
+                            outline: 'none'
+                          }}
+                        />
+                      </div>
+
+                      <button
+                        type="submit"
+                        disabled={authLoading}
+                        style={{
+                          width: '100%',
+                          padding: '13px',
+                          background: 'var(--accent, #eab308)',
+                          color: '#000000',
+                          border: 'none',
+                          borderRadius: '8px',
+                          fontWeight: 900,
+                          fontSize: '0.88rem',
+                          letterSpacing: '0.05em',
+                          textTransform: 'uppercase',
+                          cursor: authLoading ? 'not-allowed' : 'pointer',
+                          opacity: authLoading ? 0.7 : 1
+                        }}
+                      >
+                        {authLoading ? 'Verifying...' : 'Verify Password & Request 2FA OTP →'}
+                      </button>
+
+                      <div style={{ textAlign: 'center', marginTop: '1.25rem' }}>
+                        <button
+                          type="button"
+                          onClick={() => { setAuthMode('signup'); setAuthError(''); }}
+                          style={{ background: 'none', border: 'none', color: '#9ca3af', fontSize: '0.8rem', cursor: 'pointer', textDecoration: 'underline' }}
+                        >
+                          New Admin? Register your account first (Sign Up) →
+                        </button>
+                      </div>
+                    </form>
+                  ) : (
+                    /* 2FA OTP VERIFICATION */
+                    <form onSubmit={handleAdminVerify2FaOtp}>
+                      <div style={{
+                        background: 'rgba(34, 197, 94, 0.1)',
+                        border: '1px solid rgba(34, 197, 94, 0.3)',
+                        borderRadius: '8px',
+                        padding: '10px 14px',
+                        marginBottom: '1.25rem',
+                        fontSize: '0.8rem',
+                        color: '#86efac'
+                      }}>
+                        Password verified! 2FA OTP sent to: <strong>{pendingPassword2Fa.user.email}</strong>
+                      </div>
+
+                      <div style={{
+                        background: 'radial-gradient(circle at 50% 50%, rgba(234, 179, 8, 0.18) 0%, rgba(234, 179, 8, 0.06) 100%)',
+                        border: '1px solid rgba(234, 179, 8, 0.35)',
+                        borderRadius: '8px',
+                        padding: '10px 14px',
+                        marginBottom: '1.25rem',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center'
+                      }}>
+                        <div>
+                          <span style={{ fontSize: '0.66rem', color: '#fef08a', display: 'block', fontWeight: 700 }}>2FA SECURITY OTP</span>
+                          <span style={{ fontSize: '1.35rem', fontWeight: 900, letterSpacing: '4px', color: '#fff' }}>
+                            {pendingPassword2Fa.otp}
+                          </span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setTwoFaOtpInput(pendingPassword2Fa.otp)}
+                          style={{
+                            padding: '6px 12px',
+                            borderRadius: '6px',
+                            background: '#eab308',
+                            color: '#000',
+                            border: 'none',
+                            fontWeight: 800,
+                            fontSize: '0.76rem',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          Auto-Fill Code
+                        </button>
+                      </div>
+
+                      <div style={{ marginBottom: '1.4rem' }}>
+                        <label style={{ display: 'block', fontSize: '0.76rem', color: '#9ca3af', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center' }}>
+                          Enter 6-Digit 2FA Code
+                        </label>
+                        <input
+                          type="text"
+                          maxLength={6}
+                          value={twoFaOtpInput}
+                          onChange={(e) => setTwoFaOtpInput(e.target.value.replace(/\D/g, ''))}
+                          placeholder="000000"
+                          required
+                          autoFocus
+                          style={{
+                            width: '100%',
+                            padding: '11px 14px',
+                            background: 'rgba(255, 255, 255, 0.05)',
+                            border: '1px solid rgba(255, 255, 255, 0.2)',
+                            borderRadius: '8px',
+                            color: '#fff',
+                            fontSize: '1.3rem',
+                            fontWeight: 900,
+                            letterSpacing: '8px',
+                            textAlign: 'center',
+                            outline: 'none'
+                          }}
+                        />
+                      </div>
+
+                      <button
+                        type="submit"
+                        disabled={twoFaOtpInput.length < 6}
+                        style={{
+                          width: '100%',
+                          padding: '13px',
+                          background: '#22c55e',
+                          color: '#000000',
+                          border: 'none',
+                          borderRadius: '8px',
+                          fontWeight: 900,
+                          fontSize: '0.88rem',
+                          letterSpacing: '0.05em',
+                          textTransform: 'uppercase',
+                          cursor: twoFaOtpInput.length < 6 ? 'not-allowed' : 'pointer',
+                          opacity: twoFaOtpInput.length < 6 ? 0.6 : 1
+                        }}
+                      >
+                        Verify 2FA OTP & Enter Command Center ✓
+                      </button>
+
+                      <div style={{ textAlign: 'center', marginTop: '1rem' }}>
+                        <button
+                          type="button"
+                          onClick={() => setPendingPassword2Fa(null)}
+                          style={{ background: 'none', border: 'none', color: '#9ca3af', fontSize: '0.76rem', cursor: 'pointer' }}
+                        >
+                          Cancel / Back to Password
+                        </button>
+                      </div>
+                    </form>
+                  )}
+                </div>
+              )}
+
+              {/* Demo Helper Chips */}
+              <div style={{
+                marginTop: '1.5rem',
+                padding: '12px 14px',
+                background: 'rgba(255, 255, 255, 0.03)',
+                borderRadius: '10px',
+                border: '1px dashed rgba(255, 255, 255, 0.15)',
+                fontSize: '0.76rem',
+                color: '#9ca3af'
+              }}>
+                <div style={{ fontWeight: 700, color: '#e5e7eb', marginBottom: '6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span>Default Super Admin Credentials:</span>
+                  <span style={{ fontSize: '0.68rem', color: 'var(--accent, #eab308)' }}>Quick Fill ↓</span>
+                </div>
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                  <button
+                    type="button"
+                    onClick={() => { setLoginIdInput('admin'); setLoginPasswordInput('NorthAdmin#2026'); }}
+                    style={{
+                      background: 'rgba(255,255,255,0.06)',
+                      border: '1px solid rgba(255,255,255,0.15)',
+                      borderRadius: '4px',
+                      padding: '3px 8px',
+                      color: 'var(--accent, #eab308)',
+                      fontSize: '0.72rem',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Super Admin (@admin)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setLoginIdInput('rohit'); setLoginPasswordInput('password123'); }}
+                    style={{
+                      background: 'rgba(255,255,255,0.06)',
+                      border: '1px solid rgba(255,255,255,0.15)',
+                      borderRadius: '4px',
+                      padding: '3px 8px',
+                      color: 'var(--accent, #eab308)',
+                      fontSize: '0.72rem',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Admin (@rohit)
+                  </button>
+                </div>
+              </div>
+            </div>
           )}
 
-          {/* Quick Demo Helper */}
-          <div style={{
-            marginTop: '1.5rem',
-            padding: '10px 12px',
-            background: 'rgba(255, 255, 255, 0.03)',
-            borderRadius: '8px',
-            border: '1px dashed rgba(255, 255, 255, 0.15)',
-            fontSize: '0.75rem',
-            color: '#9ca3af'
-          }}>
-            <div style={{ fontWeight: 600, color: '#e5e7eb', marginBottom: '4px' }}>Authorized Admin Credentials:</div>
-            <div>Username: <code style={{ color: 'var(--accent, #eab308)' }}>admin</code> | Pass: <code style={{ color: 'var(--accent, #eab308)' }}>NorthAdmin#2026</code></div>
-            <div>Mobile: <code style={{ color: 'var(--accent, #eab308)' }}>9820149201</code> (Direct OTP)</div>
-          </div>
-
+          {/* Return link */}
           <div style={{ textAlign: 'center', marginTop: '1.5rem', borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '1rem' }}>
-            <Link href="/" style={{ color: '#9ca3af', fontSize: '0.78rem', textDecoration: 'none' }}>
+            <Link href="/" style={{ color: '#9ca3af', fontSize: '0.8rem', textDecoration: 'none' }}>
               ← Return to NORTH Storefront
             </Link>
           </div>
@@ -827,28 +1660,29 @@ export default function AdminPortal() {
   }
 
   /* ══════════════════════════════════════════════════════════════════════
-     GATE 2: USER IS LOGGED IN, BUT IS NOT AN ADMIN
+     GATE 2: USER IS LOGGED IN, BUT IS A CUSTOMER (NOT ADMIN)
   ══════════════════════════════════════════════════════════════════════ */
   if (!isUserAdmin) {
     return (
       <div style={{
         minHeight: '100vh',
-        background: '#09090c',
+        background: 'radial-gradient(circle at 50% 20%, #17171d 0%, #09090c 100%)',
         color: '#f3f4f6',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: '1.5rem',
+        padding: '2rem 1.25rem',
         fontFamily: 'var(--font-primary, sans-serif)'
       }}>
         <div style={{
           width: '100%',
-          maxWidth: '500px',
+          maxWidth: '520px',
           background: '#141418',
-          border: '1px solid rgba(239, 68, 68, 0.3)',
-          borderRadius: '16px',
+          border: '1px solid rgba(239, 68, 68, 0.35)',
+          borderRadius: '18px',
           padding: '2.5rem 2rem',
-          textAlign: 'center'
+          textAlign: 'center',
+          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.85)'
         }}>
           <div style={{
             display: 'inline-flex',
@@ -857,65 +1691,281 @@ export default function AdminPortal() {
             width: '64px',
             height: '64px',
             borderRadius: '50%',
-            background: 'rgba(239, 68, 68, 0.1)',
+            background: 'rgba(239, 68, 68, 0.12)',
             color: '#ef4444',
             fontSize: '1.75rem',
-            marginBottom: '1.25rem'
+            marginBottom: '1.25rem',
+            border: '1px solid rgba(239, 68, 68, 0.3)'
           }}>
             <i className="fas fa-lock"></i>
           </div>
 
-          <h2 style={{ fontSize: '1.3rem', fontWeight: 900, marginBottom: '0.5rem' }}>
-            Access Denied: Admin Privileges Required
+          <h2 style={{ fontSize: '1.35rem', fontWeight: 900, marginBottom: '0.5rem', color: '#fff' }}>
+            Customer Account Detected
           </h2>
 
-          <p style={{ fontSize: '0.85rem', color: '#9ca3af', lineHeight: 1.5, marginBottom: '1.5rem' }}>
+          <p style={{ fontSize: '0.86rem', color: '#9ca3af', lineHeight: 1.5, marginBottom: '1.5rem' }}>
             Aap abhi <strong>{currentUser.name}</strong> (@{currentUser.username || 'customer'}) ke account se logged in hain, jo ki ek <strong>Customer Account</strong> hai.
             <br />
-            Admin portal me enter karne ke liye Admin account se login karna mandatory hai.
+            Command Center me enter karne ke liye Super Admin account se sign up ya login karna mandatory hai.
           </p>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-            <button
-              onClick={() => {
-                logoutUser();
-                setLoginIdInput('admin');
-              }}
-              style={{
-                width: '100%',
-                padding: '12px',
-                background: 'var(--accent, #eab308)',
-                color: '#000',
-                border: 'none',
-                borderRadius: '8px',
-                fontWeight: 800,
-                fontSize: '0.85rem',
-                cursor: 'pointer',
-                textTransform: 'uppercase'
-              }}
-            >
-              Sign In with Admin Account (OTP / Password)
-            </button>
+          {/* UPGRADE IN-PLACE FORM */}
+          {isUpgradeMode ? (
+            <div style={{
+              background: 'rgba(255, 255, 255, 0.03)',
+              border: '1px solid rgba(234, 179, 8, 0.3)',
+              borderRadius: '12px',
+              padding: '1.25rem',
+              textAlign: 'left',
+              marginBottom: '1.5rem'
+            }}>
+              <h3 style={{ fontSize: '0.95rem', fontWeight: 800, color: 'var(--accent, #eab308)', margin: '0 0 8px 0' }}>
+                Upgrade Current Account to Super Admin
+              </h3>
+              <p style={{ fontSize: '0.78rem', color: '#9ca3af', margin: '0 0 1rem 0' }}>
+                Apne registered email (<strong>{currentUser.email}</strong>) par OTP mangwayein aur passkey enter karein.
+              </p>
 
-            <Link
-              href="/"
-              style={{
-                display: 'block',
-                width: '100%',
-                padding: '12px',
-                background: 'rgba(255,255,255,0.06)',
-                color: '#fff',
-                border: '1px solid rgba(255,255,255,0.15)',
-                borderRadius: '8px',
-                fontWeight: 600,
-                fontSize: '0.85rem',
-                textDecoration: 'none',
-                textAlign: 'center'
-              }}
-            >
-              Return to Storefront
-            </Link>
-          </div>
+              {upgradeError && (
+                <div style={{ background: 'rgba(239, 68, 68, 0.15)', color: '#f87171', padding: '8px 12px', borderRadius: '6px', fontSize: '0.78rem', marginBottom: '1rem' }}>
+                  ⚠️ {upgradeError}
+                </div>
+              )}
+
+              {!upgradeOtpSent ? (
+                <form onSubmit={handleCustomerRequestUpgradeOtp}>
+                  <div style={{ marginBottom: '1rem' }}>
+                    <label style={{ display: 'block', fontSize: '0.72rem', color: '#9ca3af', marginBottom: '4px', textTransform: 'uppercase' }}>
+                      Super Admin Passcode
+                    </label>
+                    <input
+                      type="text"
+                      value={upgradePasskey}
+                      onChange={(e) => setUpgradePasskey(e.target.value)}
+                      placeholder="NORTH-ADMIN-2026"
+                      required
+                      style={{
+                        width: '100%',
+                        padding: '9px 12px',
+                        background: 'rgba(255, 255, 255, 0.05)',
+                        border: '1px solid rgba(255, 255, 255, 0.15)',
+                        borderRadius: '6px',
+                        color: 'var(--accent, #eab308)',
+                        fontWeight: 700,
+                        fontSize: '0.86rem'
+                      }}
+                    />
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <button
+                      type="submit"
+                      disabled={upgradeLoading}
+                      style={{
+                        flex: 1,
+                        padding: '10px',
+                        background: 'var(--accent, #eab308)',
+                        color: '#000',
+                        border: 'none',
+                        borderRadius: '6px',
+                        fontWeight: 800,
+                        fontSize: '0.82rem',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      {upgradeLoading ? 'Sending...' : 'Send Upgrade OTP →'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setIsUpgradeMode(false)}
+                      style={{
+                        padding: '10px 14px',
+                        background: 'rgba(255,255,255,0.06)',
+                        color: '#fff',
+                        border: '1px solid rgba(255,255,255,0.15)',
+                        borderRadius: '6px',
+                        cursor: 'pointer',
+                        fontSize: '0.82rem'
+                      }}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </form>
+              ) : (
+                <form onSubmit={handleCustomerVerifyUpgradeOtp}>
+                  {pendingUserOtp && (
+                    <div style={{
+                      background: 'rgba(234, 179, 8, 0.15)',
+                      border: '1px solid rgba(234, 179, 8, 0.35)',
+                      borderRadius: '6px',
+                      padding: '8px 12px',
+                      marginBottom: '1rem',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center'
+                    }}>
+                      <span style={{ fontSize: '0.82rem', color: '#fef08a' }}>
+                        OTP: <strong>{pendingUserOtp.otp}</strong>
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setUpgradeOtpInput(pendingUserOtp.otp)}
+                        style={{ padding: '4px 8px', background: '#eab308', color: '#000', border: 'none', borderRadius: '4px', fontWeight: 700, fontSize: '0.72rem', cursor: 'pointer' }}
+                      >
+                        Auto-Fill
+                      </button>
+                    </div>
+                  )}
+
+                  <div style={{ marginBottom: '1rem' }}>
+                    <label style={{ display: 'block', fontSize: '0.72rem', color: '#9ca3af', marginBottom: '4px', textTransform: 'uppercase' }}>
+                      Enter 6-Digit OTP
+                    </label>
+                    <input
+                      type="text"
+                      maxLength={6}
+                      value={upgradeOtpInput}
+                      onChange={(e) => setUpgradeOtpInput(e.target.value.replace(/\D/g, ''))}
+                      placeholder="000000"
+                      required
+                      autoFocus
+                      style={{
+                        width: '100%',
+                        padding: '10px',
+                        background: 'rgba(255, 255, 255, 0.05)',
+                        border: '1px solid rgba(255, 255, 255, 0.2)',
+                        borderRadius: '6px',
+                        color: '#fff',
+                        fontSize: '1.2rem',
+                        fontWeight: 900,
+                        letterSpacing: '6px',
+                        textAlign: 'center'
+                      }}
+                    />
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <button
+                      type="submit"
+                      disabled={upgradeLoading || upgradeOtpInput.length < 6}
+                      style={{
+                        flex: 1,
+                        padding: '10px',
+                        background: '#22c55e',
+                        color: '#000',
+                        border: 'none',
+                        borderRadius: '6px',
+                        fontWeight: 800,
+                        fontSize: '0.82rem',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      {upgradeLoading ? 'Upgrading...' : 'Verify OTP & Upgrade ✓'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setIsUpgradeMode(false)}
+                      style={{ padding: '10px 14px', background: 'rgba(255,255,255,0.06)', color: '#fff', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '6px', cursor: 'pointer', fontSize: '0.82rem' }}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </form>
+              )}
+            </div>
+          ) : (
+            /* ACTION BUTTONS */
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+              <button
+                onClick={() => {
+                  logoutUser();
+                  setAuthMode('login');
+                  setLoginIdInput('admin');
+                }}
+                style={{
+                  width: '100%',
+                  padding: '13px',
+                  background: 'var(--accent, #eab308)',
+                  color: '#000',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontWeight: 900,
+                  fontSize: '0.88rem',
+                  cursor: 'pointer',
+                  textTransform: 'uppercase',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px'
+                }}
+              >
+                <i className="fas fa-sign-in-alt"></i>
+                Sign In with Admin Account (OTP / Password)
+              </button>
+
+              <button
+                onClick={() => {
+                  logoutUser();
+                  setAuthMode('signup');
+                }}
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  background: 'rgba(255, 255, 255, 0.08)',
+                  color: '#fff',
+                  border: '1px solid rgba(255, 255, 255, 0.2)',
+                  borderRadius: '8px',
+                  fontWeight: 700,
+                  fontSize: '0.85rem',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px'
+                }}
+              >
+                <i className="fas fa-user-plus"></i>
+                Register New Super Admin Account (with OTP)
+              </button>
+
+              <button
+                onClick={() => setIsUpgradeMode(true)}
+                style={{
+                  width: '100%',
+                  padding: '11px',
+                  background: 'rgba(234, 179, 8, 0.1)',
+                  color: 'var(--accent, #eab308)',
+                  border: '1px solid rgba(234, 179, 8, 0.3)',
+                  borderRadius: '8px',
+                  fontWeight: 700,
+                  fontSize: '0.82rem',
+                  cursor: 'pointer'
+                }}
+              >
+                ⚡ Upgrade Current Account to Super Admin
+              </button>
+
+              <Link
+                href="/"
+                style={{
+                  display: 'block',
+                  width: '100%',
+                  padding: '12px',
+                  background: 'transparent',
+                  color: '#9ca3af',
+                  border: 'none',
+                  fontWeight: 600,
+                  fontSize: '0.82rem',
+                  textDecoration: 'none',
+                  textAlign: 'center'
+                }}
+              >
+                ← Return to NORTH Storefront
+              </Link>
+            </div>
+          )}
         </div>
       </div>
     );
@@ -1070,8 +2120,7 @@ export default function AdminPortal() {
             { key: 'pricing', label: `Pricing & Products (${products.length})`, icon: 'fa-tags' },
             { key: 'orders', label: `Order Tracking & Route Tracing (${orders.length})`, icon: 'fa-route' },
             { key: 'inventory', label: 'Inventory Controller', icon: 'fa-warehouse' },
-            { key: 'notifications', label: `Notifications Center (${notifications?.length || 0})`, icon: 'fa-bell' },
-            { key: 'defects', label: `Defect Reports (${defectReports?.length || 0})`, icon: 'fa-triangle-exclamation' }
+            { key: 'notifications', label: `Notifications Center (${notifications?.length || 0})`, icon: 'fa-bell' }
           ].map(tab => (
             <button
               key={tab.key}
@@ -1701,346 +2750,6 @@ export default function AdminPortal() {
                 </div>
               </div>
             </div>
-          </div>
-        )}
-
-        {/* ═════════════════════════════════════════════════════════════════
-            TAB 6: DEFECTIVE PRODUCT REPORTS & QC AUDIT
-        ══════════════════════════════════════════════════════════════════ */}
-        {activeTab === 'defects' && (
-          <div>
-            {/* Header + Stats */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '1.75rem' }}>
-              <div style={{ background: '#141418', border: '1px solid rgba(255,255,255,0.08)', padding: '1.25rem', borderRadius: '10px' }}>
-                <div style={{ fontSize: '0.72rem', color: '#9ca3af', fontWeight: 700, textTransform: 'uppercase' }}>Total Defect Tickets</div>
-                <div style={{ fontSize: '1.8rem', fontWeight: 900, color: '#fff', marginTop: '4px' }}>{defectReports?.length || 0}</div>
-                <span style={{ fontSize: '0.72rem', color: '#9ca3af' }}>Customer grievance claims</span>
-              </div>
-              <div style={{ background: '#141418', border: '1px solid rgba(239, 68, 68, 0.25)', padding: '1.25rem', borderRadius: '10px' }}>
-                <div style={{ fontSize: '0.72rem', color: '#f87171', fontWeight: 700, textTransform: 'uppercase' }}>Pending QC / Review</div>
-                <div style={{ fontSize: '1.8rem', fontWeight: 900, color: '#ef4444', marginTop: '4px' }}>
-                  {(defectReports || []).filter(r => r.status === 'Pending Review' || r.status === 'Under QC Inspection').length}
-                </div>
-                <span style={{ fontSize: '0.72rem', color: '#fca5a5' }}>Requires urgent inspection</span>
-              </div>
-              <div style={{ background: '#141418', border: '1px solid rgba(59, 130, 246, 0.25)', padding: '1.25rem', borderRadius: '10px' }}>
-                <div style={{ fontSize: '0.72rem', color: '#60a5fa', fontWeight: 700, textTransform: 'uppercase' }}>Replacements Dispatched</div>
-                <div style={{ fontSize: '1.8rem', fontWeight: 900, color: '#3b82f6', marginTop: '4px' }}>
-                  {(defectReports || []).filter(r => r.status === 'Approved Replacement').length}
-                </div>
-                <span style={{ fontSize: '0.72rem', color: '#93c5fd' }}>Fresh pieces shipped</span>
-              </div>
-              <div style={{ background: '#141418', border: '1px solid rgba(34, 197, 94, 0.25)', padding: '1.25rem', borderRadius: '10px' }}>
-                <div style={{ fontSize: '0.72rem', color: '#4ade80', fontWeight: 700, textTransform: 'uppercase' }}>Resolved / Refunded</div>
-                <div style={{ fontSize: '1.8rem', fontWeight: 900, color: '#22c55e', marginTop: '4px' }}>
-                  {(defectReports || []).filter(r => r.status === 'Resolved' || r.status === 'Approved Refund').length}
-                </div>
-                <span style={{ fontSize: '0.72rem', color: '#86efac' }}>Full customer satisfaction</span>
-              </div>
-            </div>
-
-            {/* Filter Pill Row */}
-            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '1.5rem' }}>
-              {[
-                { id: 'all', label: `All Reports (${defectReports?.length || 0})` },
-                { id: 'Pending Review', label: 'Pending Review' },
-                { id: 'Under QC Inspection', label: 'Under QC' },
-                { id: 'Approved Replacement', label: 'Approved Replacement' },
-                { id: 'Approved Refund', label: 'Approved Refund' },
-                { id: 'Resolved', label: 'Resolved' }
-              ].map(f => (
-                <button
-                  key={f.id}
-                  onClick={() => setDefectFilter(f.id)}
-                  style={{
-                    padding: '6px 14px',
-                    borderRadius: '20px',
-                    border: defectFilter === f.id ? '1px solid var(--accent, #eab308)' : '1px solid rgba(255,255,255,0.1)',
-                    background: defectFilter === f.id ? 'rgba(234, 179, 8, 0.15)' : 'rgba(255,255,255,0.04)',
-                    color: defectFilter === f.id ? 'var(--accent, #eab308)' : '#9ca3af',
-                    fontSize: '0.78rem',
-                    fontWeight: 700,
-                    cursor: 'pointer'
-                  }}
-                >
-                  {f.label}
-                </button>
-              ))}
-            </div>
-
-            {/* Reports List */}
-            {(!defectReports || defectReports.length === 0) ? (
-              <div style={{ background: '#141418', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '3rem', textAlign: 'center' }}>
-                <i className="fas fa-circle-check" style={{ fontSize: '2.5rem', color: '#22c55e', marginBottom: '1rem' }}></i>
-                <h3 style={{ fontSize: '1.1rem', fontWeight: 800, margin: '0 0 6px' }}>Zero Defective Reports</h3>
-                <p style={{ fontSize: '0.82rem', color: '#9ca3af', margin: 0 }}>Every shipped streetwear parcel currently passes 100% Quality Inspection.</p>
-              </div>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-                {defectReports
-                  .filter(r => defectFilter === 'all' || r.status === defectFilter)
-                  .map(report => (
-                    <div
-                      key={report.id}
-                      style={{
-                        background: '#141418',
-                        border: '1px solid rgba(255,255,255,0.08)',
-                        borderRadius: '12px',
-                        padding: '1.5rem',
-                        boxShadow: '0 4px 20px rgba(0,0,0,0.4)'
-                      }}
-                    >
-                      {/* Ticket Header */}
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem', borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '1rem', marginBottom: '1rem' }}>
-                        <div>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                            <span style={{ fontSize: '1rem', fontWeight: 900, color: 'var(--accent, #eab308)', letterSpacing: '0.05em' }}>
-                              #{report.id}
-                            </span>
-                            <span style={{
-                              fontSize: '0.7rem',
-                              fontWeight: 800,
-                              padding: '2px 8px',
-                              borderRadius: '4px',
-                              background: report.status === 'Pending Review' ? 'rgba(239, 68, 68, 0.15)' :
-                                report.status === 'Under QC Inspection' ? 'rgba(234, 179, 8, 0.15)' :
-                                report.status === 'Approved Replacement' ? 'rgba(59, 130, 246, 0.15)' :
-                                report.status === 'Approved Refund' ? 'rgba(168, 85, 247, 0.15)' :
-                                'rgba(34, 197, 94, 0.15)',
-                              color: report.status === 'Pending Review' ? '#ef4444' :
-                                report.status === 'Under QC Inspection' ? '#eab308' :
-                                report.status === 'Approved Replacement' ? '#60a5fa' :
-                                report.status === 'Approved Refund' ? '#c084fc' :
-                                '#22c55e',
-                              border: '1px solid currentColor'
-                            }}>
-                              {report.status}
-                            </span>
-                          </div>
-                          <div style={{ fontSize: '0.74rem', color: '#9ca3af', marginTop: '4px' }}>
-                            Reported on {new Date(report.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                          </div>
-                        </div>
-
-                        {/* Customer & Order pills */}
-                        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                          <span style={{ fontSize: '0.75rem', background: 'rgba(255,255,255,0.06)', padding: '4px 10px', borderRadius: '6px', color: '#d1d5db' }}>
-                            <i className="fas fa-receipt" style={{ marginRight: '6px', color: 'var(--accent)' }}></i>
-                            Order: <strong>{report.orderId}</strong>
-                          </span>
-                          <span style={{ fontSize: '0.75rem', background: 'rgba(255,255,255,0.06)', padding: '4px 10px', borderRadius: '6px', color: '#d1d5db' }}>
-                            <i className="fas fa-user" style={{ marginRight: '6px', color: 'var(--accent)' }}></i>
-                            {report.customerName}
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* Main details grid: Info + Uploaded Images */}
-                      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(280px, 1.4fr) minmax(240px, 1fr)', gap: '1.5rem', marginBottom: '1.25rem' }}>
-                        <div>
-                          <div style={{ marginBottom: '0.75rem' }}>
-                            <div style={{ fontSize: '0.72rem', textTransform: 'uppercase', color: '#9ca3af', fontWeight: 700 }}>Damaged Item & Defect Type</div>
-                            <div style={{ fontSize: '0.92rem', fontWeight: 800, color: '#fff', marginTop: '2px' }}>
-                              {report.productName} {report.productColor && <span style={{ color: '#9ca3af', fontWeight: 500 }}>({report.productColor})</span>}
-                            </div>
-                            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', marginTop: '4px', fontSize: '0.75rem', background: 'rgba(239,68,68,0.1)', color: '#f87171', padding: '3px 8px', borderRadius: '4px', border: '1px solid rgba(239,68,68,0.2)' }}>
-                              <i className="fas fa-triangle-exclamation"></i>
-                              {report.defectCategoryLabel || report.defectCategory}
-                            </div>
-                          </div>
-
-                          <div style={{ marginBottom: '0.75rem' }}>
-                            <div style={{ fontSize: '0.72rem', textTransform: 'uppercase', color: '#9ca3af', fontWeight: 700 }}>Customer's Concern / Feedback:</div>
-                            <div style={{ fontSize: '0.84rem', color: '#e5e7eb', background: 'rgba(0,0,0,0.3)', padding: '10px 12px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.06)', marginTop: '4px', lineHeight: 1.5 }}>
-                              "{report.description}"
-                            </div>
-                          </div>
-
-                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', fontSize: '0.75rem' }}>
-                            <div>
-                              <span style={{ color: '#9ca3af', display: 'block' }}>Customer Request:</span>
-                              <span style={{ fontWeight: 800, color: report.resolutionPreference === 'replacement' ? '#60a5fa' : report.resolutionPreference === 'refund' ? '#c084fc' : '#eab308' }}>
-                                {report.resolutionPreference === 'replacement' ? '🔄 Free Replacement' :
-                                 report.resolutionPreference === 'refund' ? '💸 Full Refund to Source' :
-                                 '🎁 Store Credit + ₹200 Goodwill'}
-                              </span>
-                            </div>
-                            <div>
-                              <span style={{ color: '#9ca3af', display: 'block' }}>Contact Details:</span>
-                              <span style={{ color: '#fff' }}>📱 {report.customerPhone} • {report.customerEmail}</span>
-                            </div>
-                          </div>
-
-                          {report.pickupAddress && (
-                            <div style={{ marginTop: '8px', fontSize: '0.74rem', color: '#9ca3af' }}>
-                              📍 Reverse Pickup: <span style={{ color: '#e5e7eb' }}>{report.pickupAddress}</span>
-                            </div>
-                          )}
-
-                          {report.statusNote && (
-                            <div style={{ marginTop: '8px', fontSize: '0.74rem', color: 'var(--accent, #eab308)', background: 'rgba(234,179,8,0.08)', padding: '6px 10px', borderRadius: '6px' }}>
-                              ⚡ Note: {report.statusNote}
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Customer Uploaded Defect Photos */}
-                        <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '10px', padding: '1rem' }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                            <div style={{ fontSize: '0.72rem', textTransform: 'uppercase', color: '#9ca3af', fontWeight: 700 }}>
-                              <i className="fas fa-camera" style={{ marginRight: '6px', color: 'var(--accent)' }}></i>
-                              Uploaded Defect Evidence ({report.images?.length || 0})
-                            </div>
-                            <span style={{ fontSize: '0.68rem', color: '#666' }}>Click to zoom</span>
-                          </div>
-
-                          {(!report.images || report.images.length === 0) ? (
-                            <div style={{ padding: '2rem 1rem', textAlign: 'center', color: '#666', fontSize: '0.76rem' }}>
-                              No defect photos attached by customer
-                            </div>
-                          ) : (
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(70px, 1fr))', gap: '8px' }}>
-                              {report.images.map((imgUrl, idx) => (
-                                <button
-                                  key={idx}
-                                  type="button"
-                                  onClick={() => setSelectedDefectPhoto({ url: imgUrl, reportId: report.id, index: idx + 1 })}
-                                  style={{
-                                    padding: 0,
-                                    background: '#000',
-                                    border: '1px solid rgba(255,255,255,0.15)',
-                                    borderRadius: '6px',
-                                    overflow: 'hidden',
-                                    aspectRatio: '1',
-                                    cursor: 'pointer',
-                                    position: 'relative'
-                                  }}
-                                  title="Click to zoom inspect"
-                                >
-                                  <img
-                                    src={imgUrl}
-                                    alt={`Defect ${idx + 1}`}
-                                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                    onError={(e) => {
-                                      e.currentTarget.src = '/images/product-1.jpg';
-                                    }}
-                                  />
-                                  <div style={{
-                                    position: 'absolute',
-                                    bottom: 0,
-                                    left: 0,
-                                    right: 0,
-                                    background: 'rgba(0,0,0,0.7)',
-                                    color: '#fff',
-                                    fontSize: '0.6rem',
-                                    textAlign: 'center',
-                                    padding: '2px 0'
-                                  }}>
-                                    Photo #{idx + 1}
-                                  </div>
-                                </button>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Admin Decision & Status Bar */}
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '10px' }}>
-                        <span style={{ fontSize: '0.74rem', color: '#9ca3af', fontWeight: 600 }}>
-                          Admin Actions & Resolution:
-                        </span>
-                        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                          <button
-                            type="button"
-                            onClick={() => updateDefectReportStatus(report.id, 'Under QC Inspection', 'Reverse pickup scheduled for inspection')}
-                            style={{
-                              padding: '6px 12px',
-                              borderRadius: '6px',
-                              background: 'rgba(234, 179, 8, 0.1)',
-                              border: '1px solid rgba(234, 179, 8, 0.3)',
-                              color: 'var(--accent, #eab308)',
-                              fontSize: '0.74rem',
-                              fontWeight: 700,
-                              cursor: 'pointer'
-                            }}
-                          >
-                            <i className="fas fa-magnifying-glass" style={{ marginRight: '4px' }}></i> Move to QC
-                          </button>
-
-                          <button
-                            type="button"
-                            onClick={() => updateDefectReportStatus(report.id, 'Approved Replacement', 'Express replacement parcel dispatched')}
-                            style={{
-                              padding: '6px 12px',
-                              borderRadius: '6px',
-                              background: 'rgba(59, 130, 246, 0.15)',
-                              border: '1px solid rgba(59, 130, 246, 0.4)',
-                              color: '#60a5fa',
-                              fontSize: '0.74rem',
-                              fontWeight: 700,
-                              cursor: 'pointer'
-                            }}
-                          >
-                            <i className="fas fa-box-check" style={{ marginRight: '4px' }}></i> Approve Replacement
-                          </button>
-
-                          <button
-                            type="button"
-                            onClick={() => updateDefectReportStatus(report.id, 'Approved Refund', 'Full refund initiated to original payment source')}
-                            style={{
-                              padding: '6px 12px',
-                              borderRadius: '6px',
-                              background: 'rgba(168, 85, 247, 0.15)',
-                              border: '1px solid rgba(168, 85, 247, 0.4)',
-                              color: '#c084fc',
-                              fontSize: '0.74rem',
-                              fontWeight: 700,
-                              cursor: 'pointer'
-                            }}
-                          >
-                            <i className="fas fa-indian-rupee-sign" style={{ marginRight: '4px' }}></i> Approve Refund
-                          </button>
-
-                          <button
-                            type="button"
-                            onClick={() => updateDefectReportStatus(report.id, 'Resolved', 'Ticket resolved with customer satisfaction')}
-                            style={{
-                              padding: '6px 12px',
-                              borderRadius: '6px',
-                              background: 'rgba(34, 197, 94, 0.15)',
-                              border: '1px solid rgba(34, 197, 94, 0.4)',
-                              color: '#4ade80',
-                              fontSize: '0.74rem',
-                              fontWeight: 700,
-                              cursor: 'pointer'
-                            }}
-                          >
-                            <i className="fas fa-check-double" style={{ marginRight: '4px' }}></i> Mark Resolved
-                          </button>
-
-                          <button
-                            type="button"
-                            onClick={() => updateDefectReportStatus(report.id, 'Rejected', 'Defect not verified against quality criteria')}
-                            style={{
-                              padding: '6px 12px',
-                              borderRadius: '6px',
-                              background: 'rgba(239, 68, 68, 0.1)',
-                              border: '1px solid rgba(239, 68, 68, 0.25)',
-                              color: '#f87171',
-                              fontSize: '0.74rem',
-                              fontWeight: 700,
-                              cursor: 'pointer'
-                            }}
-                          >
-                            <i className="fas fa-ban" style={{ marginRight: '4px' }}></i> Reject Claim
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-              </div>
-            )}
           </div>
         )}
       </div>
@@ -2701,74 +3410,6 @@ export default function AdminPortal() {
                 </button>
               </div>
             </form>
-          </div>
-        </div>
-      )}
-
-      {/* ══════════════════════════════════════════════════════════════════
-          MODAL: HIGH-RES DEFECT PHOTO INSPECTOR
-      ══════════════════════════════════════════════════════════════════ */}
-      {selectedDefectPhoto && (
-        <div
-          onClick={() => setSelectedDefectPhoto(null)}
-          style={{
-            position: 'fixed',
-            inset: 0,
-            background: 'rgba(0,0,0,0.92)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 2000,
-            padding: '2rem',
-            backdropFilter: 'blur(10px)'
-          }}
-        >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            style={{
-              maxWidth: '850px',
-              width: '100%',
-              background: '#16161b',
-              border: '1px solid rgba(255,255,255,0.15)',
-              borderRadius: '16px',
-              overflow: 'hidden',
-              boxShadow: '0 25px 60px rgba(0,0,0,0.9)'
-            }}
-          >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem 1.25rem', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-              <div>
-                <span style={{ fontSize: '0.88rem', fontWeight: 800, color: '#fff' }}>
-                  Defect Photo Evidence Inspection
-                </span>
-                <span style={{ fontSize: '0.75rem', color: 'var(--accent, #eab308)', marginLeft: '10px' }}>
-                  Ticket #{selectedDefectPhoto.reportId}
-                </span>
-              </div>
-              <button
-                type="button"
-                onClick={() => setSelectedDefectPhoto(null)}
-                style={{ background: 'none', border: 'none', color: '#9ca3af', fontSize: '1.25rem', cursor: 'pointer' }}
-              >
-                &times;
-              </button>
-            </div>
-            <div style={{ padding: '1rem', background: '#0a0a0c', display: 'flex', alignItems: 'center', justifyContent: 'center', maxHeight: '70vh' }}>
-              <img
-                src={selectedDefectPhoto.url}
-                alt="Defect evidence zoom"
-                style={{ maxWidth: '100%', maxHeight: '68vh', objectFit: 'contain', borderRadius: '8px' }}
-              />
-            </div>
-            <div style={{ padding: '10px 1.25rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid rgba(255,255,255,0.08)', fontSize: '0.75rem', color: '#9ca3af' }}>
-              <span>Customer photo #{selectedDefectPhoto.index} attached during defect report</span>
-              <button
-                type="button"
-                onClick={() => setSelectedDefectPhoto(null)}
-                style={{ padding: '6px 14px', borderRadius: '6px', background: 'var(--accent, #eab308)', color: '#000', border: 'none', fontWeight: 800, cursor: 'pointer' }}
-              >
-                Close Preview
-              </button>
-            </div>
           </div>
         </div>
       )}

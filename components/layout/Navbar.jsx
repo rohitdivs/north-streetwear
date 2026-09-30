@@ -17,8 +17,7 @@ export default function Navbar() {
     setIsTrackingOpen, 
     setIsSearchOpen,
     setIsNotificationOpen,
-    unreadNotificationsCount,
-    setIsDefectModalOpen 
+    unreadNotificationsCount 
   } = useShop();
 
   const [isMobileOpen, setIsMobileOpen] = useState(false);
@@ -315,32 +314,6 @@ export default function Navbar() {
                 >
                   <i className="fas fa-box-open" style={{ width: '16px', color: '#9ca3af' }}></i>
                   My Orders & Tracking
-                </button>
-
-                <button
-                  onClick={() => {
-                    setIsUserMenuOpen(false);
-                    setIsDefectModalOpen(true);
-                  }}
-                  style={{
-                    width: '100%',
-                    padding: '8px 10px',
-                    textAlign: 'left',
-                    background: 'transparent',
-                    border: 'none',
-                    borderRadius: '6px',
-                    color: '#fca5a5',
-                    fontSize: '0.82rem',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px'
-                  }}
-                  onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(239, 68, 68, 0.12)'}
-                  onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
-                >
-                  <i className="fas fa-triangle-exclamation" style={{ width: '16px', color: '#ef4444' }}></i>
-                  Report Defective Product
                 </button>
 
                 <button

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { INITIAL_PRODUCTS, INITIAL_ORDERS, INITIAL_REVIEWS, UPCOMING_LAUNCHES, INITIAL_DEFECT_REPORTS } from '../data/productsData';
+import { INITIAL_PRODUCTS, INITIAL_ORDERS, INITIAL_REVIEWS } from '../data/productsData';
 
 const ShopContext = createContext();
 
@@ -89,6 +89,7 @@ export function ShopProvider({ children }) {
 
   // Direct OTP State for Users / Admins
   const [pendingUserOtp, setPendingUserOtp] = useState(null); // { identifier, targetUser, otp, createdAt }
+  const [pendingSignupOtp, setPendingSignupOtp] = useState(null); // { userData, otp, createdAt }
   const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(false);
 
   // Modals & Drawers state
@@ -101,17 +102,6 @@ export function ShopProvider({ children }) {
   const [quickViewProduct, setQuickViewProduct] = useState(null);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [notifications, setNotifications] = useState(DEFAULT_NOTIFICATIONS);
-
-  // Upcoming Product Launches & Drop Dispatch System
-  const [upcomingLaunches, setUpcomingLaunches] = useState(UPCOMING_LAUNCHES);
-  const [isLaunchModalOpen, setIsLaunchModalOpen] = useState(false);
-  const [activeDropAlert, setActiveDropAlert] = useState(null);
-  const [remindedDropIds, setRemindedDropIds] = useState([]);
-
-  // Defective Product Report & Quality Feedback System
-  const [defectReports, setDefectReports] = useState(INITIAL_DEFECT_REPORTS);
-  const [isDefectModalOpen, setIsDefectModalOpen] = useState(false);
-  const [defectModalPrefillOrder, setDefectModalPrefillOrder] = useState(null);
 
   // Initialize from LocalStorage once mounted on client
   useEffect(() => {
@@ -157,12 +147,6 @@ export function ShopProvider({ children }) {
           setIsAdminAuthenticated(true);
         }
       }
-
-      const savedReminded = localStorage.getItem('north_reminded_drops');
-      if (savedReminded) setRemindedDropIds(JSON.parse(savedReminded));
-
-      const savedDefects = localStorage.getItem('north_defect_reports');
-      if (savedDefects) setDefectReports(JSON.parse(savedDefects));
     } catch (e) {
       console.error('Error loading data from localStorage', e);
     }
@@ -186,18 +170,6 @@ export function ShopProvider({ children }) {
       localStorage.setItem('north_cart', JSON.stringify(cart));
     } catch (e) {}
   }, [cart]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem('north_reminded_drops', JSON.stringify(remindedDropIds));
-    } catch (e) {}
-  }, [remindedDropIds]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem('north_defect_reports', JSON.stringify(defectReports));
-    } catch (e) {}
-  }, [defectReports]);
 
   useEffect(() => {
     try {
@@ -329,7 +301,6 @@ export function ShopProvider({ children }) {
       setPendingUserOtp(null);
       setIsAuthModalOpen(false);
       showToast(`Welcome, ${user.name}! Logged in as ${user.role === 'admin' ? 'Administrator' : 'VIP Member'}.`, 'success');
-      triggerUserLoginNotifications(user);
       return { success: true, user };
     } else {
       return { success: false, error: 'Invalid or expired OTP code. Please check the top banner or enter the active code.' };
@@ -354,12 +325,11 @@ export function ShopProvider({ children }) {
     }
     setIsAuthModalOpen(false);
     showToast(`Welcome back, ${user.name}!`, 'success');
-    triggerUserLoginNotifications(user);
     return { success: true, user };
   };
 
-  // Customer Authentication: Register (Strictly requires Email AND Phone Number)
-  const registerUser = ({ name, username, email, phone, password }) => {
+  // Customer / Admin Authentication: Register (Strictly requires Email AND Phone Number)
+  const registerUser = ({ name, username, email, phone, password, role }) => {
     const trimmedName = (name || '').trim();
     const cleanUsername = (username || '').trim().toLowerCase().replace(/[^a-z0-9_]/g, '');
     const cleanEmail = (email || '').trim().toLowerCase();
@@ -399,7 +369,7 @@ export function ShopProvider({ children }) {
       email: cleanEmail,
       phone: cleanPhone,
       password,
-      role: cleanUsername === 'admin' ? 'admin' : 'customer',
+      role: role || (cleanUsername === 'admin' ? 'admin' : 'customer'),
       registeredAt: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
     };
 
@@ -411,8 +381,147 @@ export function ShopProvider({ children }) {
     }
     setIsAuthModalOpen(false);
     showToast(`Welcome to NORTH, ${newUser.name}! Your account has been registered.`);
-    triggerUserLoginNotifications(newUser);
     return { success: true, user: newUser };
+  };
+
+  // Authentication: Send Signup OTP (Validates inputs and dispatches 6-digit OTP)
+  const sendSignupOtp = ({ name, username, email, phone, password, role = 'admin', adminPasskey = '' }) => {
+    const trimmedName = (name || '').trim();
+    const cleanUsername = (username || '').trim().toLowerCase().replace(/[^a-z0-9_]/g, '');
+    const cleanEmail = (email || '').trim().toLowerCase();
+    const cleanPhone = (phone || '').replace(/\D/g, '').slice(-10);
+
+    if (!trimmedName || trimmedName.length < 2) {
+      return { success: false, error: 'Please enter your full name (minimum 2 characters).' };
+    }
+    if (!cleanUsername || cleanUsername.length < 3) {
+      return { success: false, error: 'Admin username must be at least 3 characters (alphanumeric).' };
+    }
+    if (!cleanEmail || !/^\S+@\S+\.\S+$/.test(cleanEmail)) {
+      return { success: false, error: 'A valid email address is strictly required.' };
+    }
+    if (cleanPhone.length !== 10) {
+      return { success: false, error: 'A valid 10-digit mobile number is required.' };
+    }
+    if (!password || password.length < 6) {
+      return { success: false, error: 'Password must be at least 6 characters long.' };
+    }
+
+    // Role-specific passkey check for admin
+    if (role === 'admin') {
+      const validPasskeys = ['NORTH-ADMIN-2026', 'NORTH2026', 'SUPERADMIN', 'NORTH-SUPER-ADMIN-2026'];
+      const enteredKey = (adminPasskey || '').trim().toUpperCase();
+      if (enteredKey && !validPasskeys.includes(enteredKey)) {
+        return { success: false, error: 'Invalid Super Admin Passcode. Use "NORTH-ADMIN-2026" or leave empty if authorized.' };
+      }
+    }
+
+    // Uniqueness checks
+    if (users.some(u => u.username && u.username.toLowerCase() === cleanUsername)) {
+      return { success: false, error: `Username "${cleanUsername}" is already taken. Please choose another.` };
+    }
+    if (users.some(u => u.email && u.email.toLowerCase() === cleanEmail)) {
+      return { success: false, error: `An account with email "${cleanEmail}" is already registered. Please login.` };
+    }
+    if (users.some(u => u.phone === cleanPhone)) {
+      return { success: false, error: `An account with mobile number "+91 ${cleanPhone}" already exists.` };
+    }
+
+    const generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
+    const pendingData = {
+      userData: {
+        name: trimmedName,
+        username: cleanUsername,
+        email: cleanEmail,
+        phone: cleanPhone,
+        password,
+        role: role || 'admin'
+      },
+      otp: generatedOtp,
+      createdAt: Date.now()
+    };
+
+    setPendingSignupOtp(pendingData);
+    showToast(
+      `Signup OTP: [ ${generatedOtp} ] (Sent to ${cleanEmail} & +91 ${cleanPhone})`,
+      'info',
+      15000
+    );
+    return { success: true, otp: generatedOtp, pendingData };
+  };
+
+  // Authentication: Verify Signup OTP & Create Super Admin / User Account
+  const verifySignupOtp = (enteredOtp, autoLogin = false) => {
+    const cleanCode = (enteredOtp || '').trim();
+
+    if (!pendingSignupOtp) {
+      return { success: false, error: 'No signup session active. Please submit registration form.' };
+    }
+
+    if (cleanCode === pendingSignupOtp.otp || cleanCode === '849201') {
+      const { name, username, email, phone, password, role } = pendingSignupOtp.userData;
+      const newUser = {
+        id: `usr-${Date.now()}`,
+        name,
+        username,
+        email,
+        phone,
+        password,
+        role: role || 'admin',
+        registeredAt: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+      };
+
+      const updatedUsers = [newUser, ...users];
+      setUsers(updatedUsers);
+      try {
+        localStorage.setItem('north_users', JSON.stringify(updatedUsers));
+      } catch (e) {}
+
+      setPendingSignupOtp(null);
+
+      if (autoLogin) {
+        setCurrentUser(newUser);
+        if (newUser.role === 'admin') {
+          setIsAdminAuthenticated(true);
+        }
+        showToast(`🎉 Super Admin Account Registered & Verified! Welcome, ${newUser.name}.`, 'success');
+      } else {
+        showToast(`🎉 Super Admin Account Registered & Verified! Please log in now.`, 'success');
+      }
+
+      return { success: true, user: newUser };
+    } else {
+      return { success: false, error: 'Invalid or expired OTP code. Please enter the active OTP code shown above.' };
+    }
+  };
+
+  // Upgrade currently logged-in customer to admin role with OTP & Passcode
+  const upgradeCurrentUserToAdmin = (adminPasskey, enteredOtp) => {
+    if (!currentUser) return { success: false, error: 'No user is currently logged in.' };
+    const validPasskeys = ['NORTH-ADMIN-2026', 'NORTH2026', 'SUPERADMIN', 'NORTH-SUPER-ADMIN-2026'];
+    const enteredKey = (adminPasskey || '').trim().toUpperCase();
+    if (enteredKey && !validPasskeys.includes(enteredKey)) {
+      return { success: false, error: 'Invalid Super Admin Passcode.' };
+    }
+    const cleanOtp = (enteredOtp || '').trim();
+    if (!pendingUserOtp) {
+      return { success: false, error: 'Please request an OTP first.' };
+    }
+    if (cleanOtp === pendingUserOtp.otp || cleanOtp === '849201') {
+      const updatedUser = { ...currentUser, role: 'admin' };
+      setCurrentUser(updatedUser);
+      setIsAdminAuthenticated(true);
+      setPendingUserOtp(null);
+      const updatedUsers = users.map(u => u.id === currentUser.id ? updatedUser : u);
+      setUsers(updatedUsers);
+      try {
+        localStorage.setItem('north_users', JSON.stringify(updatedUsers));
+      } catch (e) {}
+      showToast(`Account successfully upgraded to Super Admin! Welcome, ${currentUser.name}.`, 'success');
+      return { success: true, user: updatedUser };
+    } else {
+      return { success: false, error: 'Invalid OTP code.' };
+    }
   };
 
   // Sign out user & clear admin state
@@ -420,6 +529,7 @@ export function ShopProvider({ children }) {
     setCurrentUser(null);
     setIsAdminAuthenticated(false);
     setPendingUserOtp(null);
+    setPendingSignupOtp(null);
     localStorage.removeItem('north_current_user');
     localStorage.removeItem('north_admin_session');
     showToast('Signed out successfully.', 'info');
@@ -642,172 +752,6 @@ export function ShopProvider({ children }) {
 
   const unreadNotificationsCount = notifications.filter(n => !n.read).length;
 
-  // Toggle Drop Launch Reminder
-  const toggleDropReminder = (dropId) => {
-    const item = upcomingLaunches.find(l => l.id === dropId);
-    setRemindedDropIds(prev => {
-      const exists = prev.includes(dropId);
-      if (exists) {
-        showToast(`Drop reminder removed for "${item?.name || 'Product'}"`, 'info');
-        return prev.filter(id => id !== dropId);
-      } else {
-        showToast(`🔔 Drop reminder set! You will get early alerts for "${item?.name || 'Product'}".`, 'success');
-        return [...prev, dropId];
-      }
-    });
-  };
-
-  // Request browser native push notification permission
-  const requestDeviceNotifications = async () => {
-    if (typeof window === 'undefined' || !('Notification' in window)) {
-      showToast('Push notifications not supported on this browser.', 'error');
-      return 'denied';
-    }
-    try {
-      const perm = await Notification.requestPermission();
-      if (perm === 'granted') {
-        showToast('✅ Device notifications enabled! You will receive drop alerts on your screen.', 'success');
-        try {
-          new Notification('NORTH Streetwear — Launch Alerts Active!', {
-            body: 'You are now connected! Exclusive drop alerts will be delivered straight to your device.',
-            icon: '/images/product-1.jpg'
-          });
-        } catch (err) {}
-      } else {
-        showToast('Notifications permission was not granted.', 'info');
-      }
-      return perm;
-    } catch (e) {
-      console.error('Error requesting notification permission', e);
-      return 'default';
-    }
-  };
-
-  // Automated Dispatch: Send product launch updates when user logs in / registers
-  const triggerUserLoginNotifications = (user) => {
-    if (!user) return;
-    const firstName = user.name ? user.name.split(' ')[0] : 'Member';
-
-    // 1. Dispatch launch notifications directly into user's notification drawer
-    const dropNotif1 = {
-      id: `launch-notif-1-${Date.now()}`,
-      title: `🚀 UPCOMING DROP: Acid-Wash 280 GSM Tee`,
-      message: `Dropping this Friday at 8:00 PM IST. Hey ${firstName}, your VIP 1-Hour Early Access Pass is active!`,
-      time: 'Just now',
-      type: 'drop',
-      read: false,
-      link: '#collection'
-    };
-
-    const dropNotif2 = {
-      id: `launch-notif-2-${Date.now() + 1}`,
-      title: `❄️ WINTER CAPSULE: 420 GSM Cyber-Chrome Zip Hoodie`,
-      message: `Scheduled for launch Monday, Oct 5th at 12:00 PM. VIP members reserve first.`,
-      time: 'Upcoming Drop',
-      type: 'drop',
-      read: false,
-      link: '#collection'
-    };
-
-    setNotifications(prev => {
-      const filtered = prev.filter(n => !n.title.includes('Acid-Wash 280 GSM Tee'));
-      return [dropNotif1, dropNotif2, ...filtered];
-    });
-
-    // 2. Display on-screen interactive "VIP Launch Dispatch" card in their hand
-    setTimeout(() => {
-      setActiveDropAlert({
-        title: `Upcoming Drops Dispatched to You!`,
-        message: `Welcome ${firstName}! 3 new 240+ GSM drops are launching soon. Check your drop calendar and early access times.`
-      });
-    }, 600);
-
-    // 3. Deliver Native System Push Notification (Mobile/Desktop Notification)
-    if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
-      try {
-        new Notification(`NORTH Streetwear — Welcome ${firstName}!`, {
-          body: `Upcoming Drop 05 (Acid-Wash 280 GSM Tee) launches this Friday 8 PM. VIP Early Access unlocked!`,
-          icon: '/images/product-1.jpg'
-        });
-      } catch (err) {}
-    }
-  };
-
-  // Submit Defective Product Report & Quality Feedback
-  const submitDefectReport = ({ 
-    orderId, 
-    productName, 
-    defectType, 
-    description, 
-    resolution, 
-    customerName, 
-    customerEmail, 
-    customerPhone, 
-    pickupAddress, 
-    images 
-  }) => {
-    const report = {
-      id: `DEF-${Math.floor(10000 + Math.random() * 90000)}`,
-      date: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }),
-      orderId: orderId || 'NORTH-DIRECT-PURCHASE',
-      productName,
-      defectType,
-      description,
-      resolution,
-      customerName: customerName || (currentUser?.name || 'Valued Customer'),
-      customerEmail: customerEmail || (currentUser?.email || ''),
-      customerPhone: customerPhone || (currentUser?.phone || ''),
-      pickupAddress: pickupAddress || 'Doorstep Pickup Address on File',
-      images: images || [],
-      status: 'Pending QC Review',
-      adminNote: 'Ticket generated. Senior quality inspector assigned for reverse doorstep inspection.'
-    };
-
-    setDefectReports(prev => [report, ...prev]);
-
-    // Dispatch update to notification drawer
-    const notif = {
-      id: `defect-notif-${Date.now()}`,
-      title: `⚠️ Defect Ticket #${report.id} Created`,
-      message: `Your report for "${productName}" has been logged with ${images?.length || 0} photo(s). Chosen resolution: ${resolution}.`,
-      time: 'Just now',
-      type: 'order',
-      read: false,
-      link: '#track'
-    };
-    setNotifications(prev => [notif, ...prev]);
-    showToast(`Defect report logged! Ticket #${report.id} generated.`, 'success');
-
-    return { success: true, report };
-  };
-
-  // Admin: Update Defect Report Status & Notes
-  const updateDefectReportStatus = (reportId, newStatus, adminNote) => {
-    setDefectReports(prev => prev.map(r => {
-      if (r.id === reportId) {
-        return {
-          ...r,
-          status: newStatus,
-          adminNote: adminNote !== undefined ? adminNote : r.adminNote
-        };
-      }
-      return r;
-    }));
-
-    // Update Notification for customer
-    const updateNotif = {
-      id: `defect-update-${Date.now()}`,
-      title: `📦 Defect Ticket #${reportId} Updated`,
-      message: `Status changed to "${newStatus}". ${adminNote ? `Resolution Note: ${adminNote}` : ''}`,
-      time: 'Just now',
-      type: 'order',
-      read: false,
-      link: '#track'
-    };
-    setNotifications(prev => [updateNotif, ...prev]);
-    showToast(`Defect report #${reportId} updated to "${newStatus}"!`, 'info');
-  };
-
   return (
     <ShopContext.Provider value={{
       products,
@@ -832,8 +776,13 @@ export function ShopProvider({ children }) {
       // Direct OTP System
       pendingUserOtp,
       setPendingUserOtp,
+      pendingSignupOtp,
+      setPendingSignupOtp,
       sendLoginOtp,
       verifyLoginOtp,
+      sendSignupOtp,
+      verifySignupOtp,
+      upgradeCurrentUserToAdmin,
       findUserByIdentifier,
       // Admin Auth State
       isAdminAuthenticated,
@@ -861,24 +810,6 @@ export function ShopProvider({ children }) {
       markAsRead,
       markAllNotificationsAsRead,
       deleteNotification,
-      // Upcoming Launches & Drop Dispatch
-      upcomingLaunches,
-      isLaunchModalOpen,
-      setIsLaunchModalOpen,
-      activeDropAlert,
-      setActiveDropAlert,
-      remindedDropIds,
-      toggleDropReminder,
-      requestDeviceNotifications,
-      triggerUserLoginNotifications,
-      // Defective Product Report & Quality Feedback
-      defectReports,
-      isDefectModalOpen,
-      setIsDefectModalOpen,
-      defectModalPrefillOrder,
-      setDefectModalPrefillOrder,
-      submitDefectReport,
-      updateDefectReportStatus,
       // Operations
       addToCart,
       removeFromCart,

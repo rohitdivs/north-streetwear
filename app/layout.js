@@ -12,9 +12,12 @@ import ToastContainer from '../components/modals/ToastContainer';
 import MobileBottomDock from '../components/layout/MobileBottomDock';
 import Preloader from '../components/layout/Preloader';
 import NotificationDrawer from '../components/modals/NotificationDrawer';
-import LaunchCalendarModal from '../components/modals/LaunchCalendarModal';
-import DropNotificationPopup from '../components/modals/DropNotificationPopup';
-import DefectiveReportModal from '../components/modals/DefectiveReportModal';
+
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
+};
 
 export const metadata = {
   title: 'NORTH — Premium Heavyweight Streetwear (240+ GSM Drops)',
@@ -54,9 +57,6 @@ export default function RootLayout({ children }) {
           <AuthModal />
           <MobileBottomDock />
           <NotificationDrawer />
-          <LaunchCalendarModal />
-          <DropNotificationPopup />
-          <DefectiveReportModal />
           <ToastContainer />
         </ShopProvider>
       </body>
