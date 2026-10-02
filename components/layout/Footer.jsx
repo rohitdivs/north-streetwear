@@ -56,34 +56,34 @@ export default function Footer() {
               <h3>Customer Care</h3>
               <ul>
                 <li>
-                  <button 
-                    type="button" 
-                    onClick={() => setIsSizeGuideOpen(true)} 
+                  <button
+                    type="button"
+                    onClick={() => setIsSizeGuideOpen(true)}
                     style={{ background: 'none', border: 'none', color: 'inherit', cursor: 'pointer', padding: 0, font: 'inherit' }}
                   >
                     Size &amp; Fit Guide
                   </button>
                 </li>
                 <li>
-                  <button 
-                    type="button" 
-                    onClick={() => setIsFitModalOpen(true)} 
+                  <button
+                    type="button"
+                    onClick={() => setIsFitModalOpen(true)}
                     style={{ background: 'none', border: 'none', color: 'inherit', cursor: 'pointer', padding: 0, font: 'inherit' }}
                   >
                     Find My Fit (AI Size)
                   </button>
                 </li>
                 <li>
-                  <button 
-                    type="button" 
-                    onClick={() => setIsTrackingOpen(true)} 
+                  <button
+                    type="button"
+                    onClick={() => setIsTrackingOpen(true)}
                     style={{ background: 'none', border: 'none', color: 'inherit', cursor: 'pointer', padding: 0, font: 'inherit' }}
                   >
                     Track Order Live
                   </button>
                 </li>
                 <li><a href="#contact">Contact Support</a></li>
-                <li><Link href="/admin" style={{ color: 'var(--accent)', fontWeight: 600 }}><i className="fas fa-lock" style={{ fontSize: '0.75rem' }}></i> Admin Portal</Link></li>
+                <li><a href="/admin" style={{ color: 'var(--accent)', fontWeight: 600 }}><i className="fas fa-lock" style={{ fontSize: '0.75rem' }}></i> Admin Portal</a></li>
                 <li><a href="mailto:rohit@wearnorth.com">rohit@wearnorth.com</a></li>
               </ul>
             </div>
